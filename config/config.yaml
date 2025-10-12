@@ -1,0 +1,55 @@
+# Algorithmic Trading App Configuration
+
+# Trading Parameters
+trading:
+  initial_capital: 100000
+  max_position_size: 0.1  # 10% of portfolio per position
+  max_positions: 5
+  enable_short_selling: false
+  
+# Risk Management
+risk:
+  max_daily_loss: 0.02  # 2% max daily loss
+  max_position_loss: 0.05  # 5% stop-loss per position
+  take_profit: 0.10  # 10% take profit target
+  trailing_stop: 0.03  # 3% trailing stop
+  
+# Backtesting
+backtesting:
+  commission: 0.001  # 0.1% commission per trade
+  slippage: 0.0005  # 0.05% slippage
+  
+# Data
+data:
+  data_provider: 'alpaca'  # or 'yahoo'
+  data_directory: 'data'
+  cache_data: true
+  
+# Logging
+logging:
+  level: 'INFO'  # DEBUG, INFO, WARNING, ERROR
+  log_directory: 'logs'
+  log_to_file: true
+  log_to_console: true
+  
+# Strategies
+strategies:
+  sma_crossover:
+    short_window: 50
+    long_window: 200
+  rsi:
+    period: 14
+    oversold: 30
+    overbought: 70
+    
+# Live Trading
+live_trading:
+  paper_trading: true  # Set to false for live trading
+  update_interval: 60  # seconds between strategy updates
+  market_hours_only: true
+  symbols:
+    - AAPL
+    - TSLA
+    - GOOGL
+    - MSFT
+    - AMZN
