@@ -23,6 +23,13 @@ ta-lib>=0.4.28
 # Optional: If ta-lib installation fails, use pandas-ta instead
 # pandas-ta>=0.3.14
 
+# Machine Learning
+scikit-learn>=1.3.0
+
+# Sentiment Analysis
+textblob>=0.17.1
+requests>=2.31.0
+
 # Logging and Configuration
 python-dotenv>=1.0.0
 

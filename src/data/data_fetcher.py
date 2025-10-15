@@ -64,7 +64,7 @@ class DataFetcher:
         start_date: str,
         end_date: str,
         timeframe: str = '1D',
-        use_cache: bool = True
+        use_cache: bool = False  # Changed default to False to always fetch fresh adjusted data
     ) -> pd.DataFrame:
         """
         Fetch historical market data.
@@ -74,10 +74,13 @@ class DataFetcher:
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             timeframe: Data timeframe ('1D', '1H', '15Min', etc.)
-            use_cache: Whether to use cached data
+            use_cache: Whether to use cached data (default: False for fresh adjusted prices)
             
         Returns:
-            DataFrame with OHLCV data
+            DataFrame with split-adjusted OHLCV data
+        
+        Note: Cache is disabled by default to ensure you always get the latest
+        split-adjusted prices. Old cached data may have unadjusted prices.
         """
         # Check cache first
         cache_file = self._get_cache_filename(symbol, start_date, end_date, timeframe)
@@ -108,7 +111,12 @@ class DataFetcher:
         end_date: str,
         timeframe: str
     ) -> pd.DataFrame:
-        """Fetch data from Alpaca API."""
+        """
+        Fetch data from Alpaca API.
+        
+        Note: We request 'split' adjustment to handle stock splits automatically.
+        This ensures prices are adjusted for splits (like NVDA's 10-for-1 split).
+        """
         try:
             # Map timeframe string to Alpaca TimeFrame
             timeframe_map = {
@@ -121,12 +129,14 @@ class DataFetcher:
             
             tf = timeframe_map.get(timeframe, TimeFrame.Day)
             
-            # Create request
+            # Create request with adjustment='split' for split-adjusted prices
+            # Options: 'raw' (default), 'split', 'dividend', 'all'
             request_params = StockBarsRequest(
                 symbol_or_symbols=symbol,
                 timeframe=tf,
                 start=datetime.strptime(start_date, '%Y-%m-%d'),
-                end=datetime.strptime(end_date, '%Y-%m-%d')
+                end=datetime.strptime(end_date, '%Y-%m-%d'),
+                adjustment='split'  # Adjust for stock splits
             )
             
             # Get bars
@@ -155,14 +165,27 @@ class DataFetcher:
         start_date: str,
         end_date: str
     ) -> pd.DataFrame:
-        """Fetch data from Yahoo Finance."""
+        """
+        Fetch data from Yahoo Finance.
+        
+        Note: Yahoo Finance automatically returns split-adjusted and dividend-adjusted
+        prices, which is correct for backtesting. The 'Close' column is adjusted,
+        while 'Open', 'High', 'Low' are also adjusted proportionally.
+        """
         try:
             ticker = yf.Ticker(symbol)
-            df = ticker.history(start=start_date, end=end_date)
+            # auto_adjust=True ensures we get adjusted prices (default behavior)
+            # This handles stock splits, dividends, etc. automatically
+            df = ticker.history(start=start_date, end=end_date, auto_adjust=True)
+            
+            if df.empty:
+                self.logger.warning(f"No data returned for {symbol}")
+                return pd.DataFrame()
             
             # Rename columns to lowercase
             df.columns = [col.lower() for col in df.columns]
             
+            # Return only OHLCV data
             return df[['open', 'high', 'low', 'close', 'volume']]
             
         except Exception as e:
@@ -211,6 +234,28 @@ class DataFetcher:
         """Generate cache filename."""
         filename = f"{symbol}_{start_date}_{end_date}_{timeframe}.csv"
         return os.path.join(self.cache_dir, filename)
+    
+    def clear_cache(self, symbol: Optional[str] = None):
+        """
+        Clear cached data.
+        
+        Args:
+            symbol: If provided, only clear cache for this symbol.
+                   If None, clear all cache.
+        """
+        if not os.path.exists(self.cache_dir):
+            return
+        
+        files_cleared = 0
+        for filename in os.listdir(self.cache_dir):
+            if filename.endswith('.csv'):
+                if symbol is None or filename.startswith(symbol):
+                    filepath = os.path.join(self.cache_dir, filename)
+                    os.remove(filepath)
+                    files_cleared += 1
+                    self.logger.info(f"Cleared cache file: {filename}")
+        
+        self.logger.info(f"Cleared {files_cleared} cache files")
     
     def get_latest_price(self, symbol: str) -> Optional[float]:
         """

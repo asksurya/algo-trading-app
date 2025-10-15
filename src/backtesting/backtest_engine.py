@@ -96,6 +96,21 @@ class BacktestEngine:
         
         return self.get_results()
     
+    def _calculate_duration(self, end_date, start_date):
+        """Calculate duration in days between two dates."""
+        try:
+            # Try direct subtraction (if both are datetime objects)
+            return (end_date - start_date).days
+        except (TypeError, AttributeError):
+            # Convert to pandas Timestamp if needed
+            try:
+                end = pd.to_datetime(end_date)
+                start = pd.to_datetime(start_date)
+                return (end - start).days
+            except:
+                # Fallback: return 0 if calculation fails
+                return 0
+    
     def _simulate_trading(self, data: pd.DataFrame, signals: pd.Series):
         """Simulate trading based on signals."""
         
@@ -110,6 +125,9 @@ class BacktestEngine:
         
         for date, row in data.iterrows():
             signal = signals.loc[date]
+            # Handle case where signal might be a Series
+            if isinstance(signal, pd.Series):
+                signal = signal.iloc[0]
             current_price = row['close']
             
             # Execute trades based on signals
@@ -143,7 +161,7 @@ class BacktestEngine:
                     'shares': position,
                     'profit': profit,
                     'profit_pct': profit_pct,
-                    'duration': (date - entry_date).days
+                    'duration': self._calculate_duration(date, entry_date)
                 })
                 
                 cash += proceeds
@@ -173,7 +191,7 @@ class BacktestEngine:
                 'shares': position,
                 'profit': profit,
                 'profit_pct': profit_pct,
-                'duration': (data.index[-1] - entry_date).days
+                'duration': self._calculate_duration(data.index[-1], entry_date)
             })
             
             cash += proceeds
