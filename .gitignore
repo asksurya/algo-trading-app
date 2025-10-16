@@ -50,6 +50,10 @@ data/cache/
 *.csv
 *.json
 
+# Models (will be retrained on cloud)
+models/
+*.pkl
+
 # API Keys and Secrets
 .env
 config/alpaca_config.py
