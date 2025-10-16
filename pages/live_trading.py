@@ -166,7 +166,7 @@ with tab1:
     4. Move to Live Trading tab to start automated trading
     """)
     
-    if st.button("🔍 Evaluate Strategies", type="primary", use_container_width=True):
+    if st.button("🔍 Evaluate Strategies", type="primary", width="stretch"):
         if not symbols:
             st.error("Please enter at least one stock symbol")
         elif not selected_strategies:
@@ -221,7 +221,7 @@ with tab1:
             })
         
         results_df = pd.DataFrame(results_data)
-        st.dataframe(results_df, hide_index=True, use_container_width=True)
+        st.dataframe(results_df, hide_index=True, width="stretch")
         
         # Detailed results
         with st.expander("📋 Detailed Results by Stock"):
@@ -243,13 +243,14 @@ with tab1:
                 st.dataframe(strat_df, hide_index=True)
 
 with tab2:
-    st.markdown("### Step 2: Start Live Trading")
+    st.markdown("### Step 2: Automated Live Trading")
     
     if not st.session_state.trader or not st.session_state.evaluation_results:
         st.warning("⚠️ Please evaluate strategies first (Step 1)")
     else:
+        # Show trading info
         st.info(f"""
-        **Ready to trade:**
+        **Configuration:**
         - Mode: {'📝 Paper Trading' if paper_trading else '💰 LIVE Trading'}
         - Stocks: {len(symbols)}
         - Max Positions: {max_positions}
@@ -257,66 +258,160 @@ with tab2:
         - Check Interval: {check_interval} seconds
         """)
         
+        # Get trader
+        trader = st.session_state.trader
+        
+        # Auto Trading Controls
         col1, col2 = st.columns(2)
-        
         with col1:
-            if st.button("▶️ Start Auto Trading", type="primary", use_container_width=True):
+            if st.button("▶️ Start Auto Trading", type="primary", width="stretch"):
                 st.session_state.trading_active = True
-        
+                st.rerun()
         with col2:
-            if st.button("⏹️ Stop Trading", type="secondary", use_container_width=True):
+            if st.button("⏹️ Stop Auto Trading", width="stretch"):
                 st.session_state.trading_active = False
-                st.info("Trading stopped")
+                st.info("Auto trading stopped")
         
-        # Trading loop (simplified for Streamlit)
+        st.markdown("---")
+        
+        # Current Portfolio Status
+        st.markdown("#### 💼 Current Portfolio")
+        try:
+            summary = trader.get_portfolio_summary()
+            if summary:
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("Portfolio Value", f"${summary['portfolio_value']:,.2f}")
+                with col2:
+                    st.metric("Cash", f"${summary['cash']:,.2f}")
+                with col3:
+                    st.metric("Buying Power", f"${summary['buying_power']:,.2f}")
+                with col4:
+                    st.metric("Positions", summary['positions_count'])
+                
+                # Show positions if any
+                if summary['positions']:
+                    with st.expander("View Open Positions"):
+                        positions_df = pd.DataFrame(summary['positions'])
+                        st.dataframe(positions_df, hide_index=True, width="stretch")
+        except Exception as e:
+            st.error(f"Could not load portfolio: {str(e)}")
+        
+        st.markdown("---")
+        
+        # Auto Trading Loop
         if st.session_state.trading_active:
-            st.markdown("### 🔄 Trading Active")
+            st.markdown("### 🔄 Auto Trading Active")
+            st.success(f"✅ Automated trading is running! Checking signals every {check_interval} seconds...")
             
-            # Get current signals
-            trader = st.session_state.trader
+            # Current time
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.write(f"**Last Check:** {current_time}")
             
-            with st.spinner("Getting signals..."):
-                signals = trader.get_current_signals()
-            
-            # Display signals
-            st.markdown("#### 📡 Current Signals")
-            signal_data = []
-            for symbol, signal in signals.items():
-                signal_str = "🟢 BUY" if signal == 1 else "🔴 SELL" if signal == -1 else "⚪ HOLD"
-                best_strat = st.session_state.evaluation_results[symbol]['best_strategy']
-                signal_data.append({
-                    'Symbol': symbol,
-                    'Strategy': best_strat,
-                    'Signal': signal_str
-                })
-            
-            signal_df = pd.DataFrame(signal_data)
-            st.dataframe(signal_df, hide_index=True, use_container_width=True)
-            
-            # Execute trades button
-            if st.button("🔄 Execute Trades", use_container_width=True):
+            try:
+                # Get signals
+                with st.spinner("Getting signals..."):
+                    signals = trader.get_current_signals()
+                
+                # Display signals
+                st.markdown("#### 📡 Current Signals")
+                signal_data = []
+                for symbol, signal in signals.items():
+                    signal_str = "🟢 BUY" if signal == 1 else "🔴 SELL" if signal == -1 else "⚪ HOLD"
+                    best_strat = st.session_state.evaluation_results[symbol]['best_strategy']
+                    signal_data.append({
+                        'Symbol': symbol,
+                        'Strategy': best_strat,
+                        'Signal': signal_str
+                    })
+                
+                signal_df = pd.DataFrame(signal_data)
+                st.dataframe(signal_df, hide_index=True, width="stretch")
+                
+                # Execute trades automatically
                 with st.spinner("Executing trades..."):
                     trades = trader.execute_trades(signals)
-                    
-                    if trades:
-                        st.success(f"✅ Executed {len(trades)} trades")
+                
+                if trades:
+                    st.success(f"✅ Executed {len(trades)} trades!")
+                    trades_df = pd.DataFrame(trades)
+                    trades_df['timestamp'] = trades_df['timestamp'].astype(str)
+                    st.dataframe(trades_df, hide_index=True, width="stretch")
+                else:
+                    st.info("ℹ️ No trades to execute (all signals are HOLD or positions already open)")
+                
+                # Wait and refresh
+                st.info(f"⏰ Next check in {check_interval} seconds... (Click 'Stop Auto Trading' to stop)")
+                time.sleep(check_interval)
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Error in auto trading: {str(e)}")
+                st.exception(e)
+                st.session_state.trading_active = False
+        
+        else:
+            st.markdown("### ⏸️ Auto Trading Stopped")
+            st.info("""
+            **Ready to start automated trading!**
+            
+            Click "Start Auto Trading" to begin. The system will:
+            1. Check for signals every {} seconds
+            2. Automatically execute BUY/SELL orders
+            3. Monitor your portfolio continuously
+            4. Display all activity in real-time
+            
+            You can stop anytime by clicking "Stop Auto Trading".
+            
+            **Note:** Make sure you're in paper trading mode before starting!
+            """.format(check_interval))
+            
+            # Manual trading option
+            st.markdown("---")
+            st.markdown("#### Or Trade Manually:")
+            
+            if st.button("🔄 Get Current Signals", width="stretch"):
+                with st.spinner("Getting signals..."):
+                    try:
+                        signals = trader.get_current_signals()
                         
-                        trades_df = pd.DataFrame(trades)
-                        st.dataframe(trades_df, hide_index=True)
-                    else:
-                        st.info("No trades to execute")
+                        signal_data = []
+                        for symbol, signal in signals.items():
+                            signal_str = "🟢 BUY" if signal == 1 else "🔴 SELL" if signal == -1 else "⚪ HOLD"
+                            best_strat = st.session_state.evaluation_results[symbol]['best_strategy']
+                            signal_data.append({
+                                'Symbol': symbol,
+                                'Strategy': best_strat,
+                                'Signal': signal_str
+                            })
+                        
+                        signal_df = pd.DataFrame(signal_data)
+                        st.dataframe(signal_df, hide_index=True, width="stretch")
+                        
+                        st.session_state.current_signals = signals
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
             
-            st.info(f"⏰ Next check in {check_interval} seconds. Click 'Execute Trades' to trade now, or let it run automatically.")
-            
-            # Auto-refresh
-            time.sleep(5)
-            st.rerun()
+            if 'current_signals' in st.session_state:
+                if st.button("⚡ Execute Trades Now", type="secondary", width="stretch"):
+                    with st.spinner("Executing..."):
+                        try:
+                            trades = trader.execute_trades(st.session_state.current_signals)
+                            if trades:
+                                st.success(f"✅ Executed {len(trades)} trades!")
+                                trades_df = pd.DataFrame(trades)
+                                trades_df['timestamp'] = trades_df['timestamp'].astype(str)
+                                st.dataframe(trades_df, hide_index=True)
+                            else:
+                                st.info("No trades to execute")
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
 
 with tab3:
     st.markdown("### 💼 Portfolio Overview")
     
     if st.session_state.trader:
-        if st.button("🔄 Refresh Portfolio", use_container_width=True):
+        if st.button("🔄 Refresh Portfolio", width="stretch"):
             with st.spinner("Loading portfolio..."):
                 summary = st.session_state.trader.get_portfolio_summary()
                 
@@ -342,7 +437,7 @@ with tab3:
                         positions_df['market_value'] = positions_df['market_value'].apply(lambda x: f"${x:.2f}")
                         positions_df['current_price'] = positions_df['current_price'].apply(lambda x: f"${x:.2f}")
                         
-                        st.dataframe(positions_df, hide_index=True, use_container_width=True)
+                        st.dataframe(positions_df, hide_index=True, width="stretch")
                     else:
                         st.info("No open positions")
                 else:

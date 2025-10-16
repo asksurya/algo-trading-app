@@ -138,6 +138,27 @@ Get your free Alpaca API keys at: https://alpaca.markets/
 - Paper trading is free and perfect for testing
 - Live trading requires account funding
 
+## 🚀 Deployment
+
+### Deploy to Cloud (5 minutes):
+See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for detailed instructions.
+
+**Quick Deploy to Streamlit Cloud (Free):**
+1. Push to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Connect repo and deploy
+4. Access on any device including iPhone! 📱
+
+**Docker Deployment:**
+```bash
+docker build -t algo-trading-app .
+docker run -p 8501:8501 algo-trading-app
+```
+
+### Mobile Access
+✅ Already mobile-responsive! Works perfectly on iPhone/Android
+✅ Add to home screen for app-like experience
+
 ## License
 
 MIT License - Use at your own risk. Not financial advice.

@@ -231,7 +231,7 @@ with st.sidebar.expander("Advanced Settings"):
     slippage = st.number_input("Slippage Rate", 0.0, 0.01, 0.0005, 0.0001, format="%.4f")
 
 # Run Backtest Button
-run_backtest = st.sidebar.button("🚀 Run Backtest", type="primary", use_container_width=True)
+run_backtest = st.sidebar.button("🚀 Run Backtest", type="primary", width="stretch")
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 About")
@@ -311,7 +311,7 @@ if run_backtest:
                 st.dataframe(
                     comparison_df,
                     hide_index=True,
-                    use_container_width=True,
+                    width="stretch",
                     column_config={
                         "Strategy": st.column_config.TextColumn("Strategy", width="medium"),
                         "Return %": st.column_config.NumberColumn("Return %", format="%.2f", help="Total return percentage"),
@@ -363,7 +363,7 @@ if run_backtest:
                     height=500
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
                 
                 # Performance Metrics Comparison Charts
                 st.markdown("### 📊 Performance Metrics Comparison")
@@ -386,7 +386,7 @@ if run_backtest:
                         template='plotly_white',
                         height=350
                     )
-                    st.plotly_chart(fig_returns, use_container_width=True)
+                    st.plotly_chart(fig_returns, width="stretch")
                 
                 with col2:
                     # Sharpe Ratio comparison
@@ -404,7 +404,7 @@ if run_backtest:
                         template='plotly_white',
                         height=350
                     )
-                    st.plotly_chart(fig_sharpe, use_container_width=True)
+                    st.plotly_chart(fig_sharpe, width="stretch")
                 
                 col3, col4 = st.columns(2)
                 
@@ -424,7 +424,7 @@ if run_backtest:
                         template='plotly_white',
                         height=350
                     )
-                    st.plotly_chart(fig_winrate, use_container_width=True)
+                    st.plotly_chart(fig_winrate, width="stretch")
                 
                 with col4:
                     # Max Drawdown comparison
@@ -442,7 +442,7 @@ if run_backtest:
                         template='plotly_white',
                         height=350
                     )
-                    st.plotly_chart(fig_dd, use_container_width=True)
+                    st.plotly_chart(fig_dd, width="stretch")
                 
                 # Best Strategy Recommendation
                 st.markdown("### 🏆 Best Strategy Analysis")
@@ -612,7 +612,7 @@ if run_backtest:
                     template='plotly_white'
                 )
                 
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             
                 # Trade Statistics
                 st.markdown("### 💼 Trade Statistics")
@@ -639,7 +639,7 @@ if run_backtest:
                             f"${metrics['avg_loss']:.2f}"
                         ]
                     })
-                    st.dataframe(summary_df, hide_index=True, use_container_width=True)
+                    st.dataframe(summary_df, hide_index=True, width="stretch")
                 
                 with col2:
                     st.markdown("#### Returns Distribution")
@@ -657,7 +657,7 @@ if run_backtest:
                             height=300,
                             template='plotly_white'
                         )
-                        st.plotly_chart(fig_hist, use_container_width=True)
+                        st.plotly_chart(fig_hist, width="stretch")
                 
                 # Trade History
                 if trades:
@@ -675,7 +675,7 @@ if run_backtest:
                     st.dataframe(
                         trades_df,
                         hide_index=True,
-                        use_container_width=True,
+                        width="stretch",
                         column_config={
                             "entry_date": "Entry Date",
                             "exit_date": "Exit Date",

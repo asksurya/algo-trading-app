@@ -1,0 +1,26 @@
+# Exclude from Docker image
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.env
+.venv
+venv/
+ENV/
+.DS_Store
+.vscode
+.idea
+*.log
+data/*.csv
+models/*.pkl
+*.md
+!README.md
+!DEPLOYMENT_GUIDE.md

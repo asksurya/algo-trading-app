@@ -1,0 +1,29 @@
+# Docker Compose for Algo Trading App
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: algo-trading-app
+    ports:
+      - "8501:8501"
+    environment:
+      # Add your API keys here or use .env file
+      - ALPACA_API_KEY=${ALPACA_API_KEY}
+      - ALPACA_SECRET_KEY=${ALPACA_SECRET_KEY}
+      - NEWSAPI_KEY=${NEWSAPI_KEY}
+      - ALPHA_VANTAGE_KEY=${ALPHA_VANTAGE_KEY}
+    volumes:
+      # Mount config directory to persist settings
+      - ./config:/app/config
+      # Mount data directory for caching
+      - ./data:/app/data
+      # Mount models directory for ML persistence
+      - ./models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

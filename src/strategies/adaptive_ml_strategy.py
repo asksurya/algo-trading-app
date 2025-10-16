@@ -293,7 +293,7 @@ class AdaptiveMLStrategy(BaseStrategy):
             feature_cols.extend([col for col in sentiment_cols if col in df.columns])
         
         # Prepare features
-        X = df[feature_cols].fillna(method='ffill').fillna(0)
+        X = df[feature_cols].ffill().fillna(0)
         X_scaled = self.scaler.transform(X)
         
         # Get predictions and probabilities
