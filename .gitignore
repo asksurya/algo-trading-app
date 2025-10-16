@@ -1,3 +1,11 @@
+# Secrets - NEVER COMMIT!
+.streamlit/secrets.toml
+config/alpaca_config.py
+config/sentiment_config.py
+*.key
+*.pem
+.env
+
 # Python
 __pycache__/
 *.py[cod]

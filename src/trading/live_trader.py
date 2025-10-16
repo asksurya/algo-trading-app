@@ -27,7 +27,25 @@ except ImportError:
 from src.backtesting.backtest_engine import BacktestEngine
 from src.data.data_fetcher import DataFetcher
 from src.strategies.base_strategy import BaseStrategy
-from config.alpaca_config import ALPACA_API_KEY, ALPACA_SECRET_KEY
+
+# Handle both local and Streamlit Cloud deployments
+try:
+    import streamlit as st
+    # Try Streamlit secrets first (for cloud deployment)
+    if hasattr(st, 'secrets'):
+        ALPACA_API_KEY = st.secrets.get("ALPACA_API_KEY", "")
+        ALPACA_SECRET_KEY = st.secrets.get("ALPACA_SECRET_KEY", "")
+    else:
+        raise ImportError("Streamlit secrets not available")
+except (ImportError, FileNotFoundError):
+    # Fall back to config file (for local deployment)
+    try:
+        from config.alpaca_config import ALPACA_API_KEY, ALPACA_SECRET_KEY
+    except ImportError:
+        # If neither works, use empty strings
+        ALPACA_API_KEY = ""
+        ALPACA_SECRET_KEY = ""
+        logging.warning("No Alpaca credentials found.")
 
 
 class LiveTrader:
