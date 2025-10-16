@@ -53,7 +53,7 @@ class AdaptiveMLStrategy(BaseStrategy):
     def __init__(
         self,
         lookback_period: int = 30,
-        confidence_threshold: float = 0.6,
+        confidence_threshold: float = 0.45,  # Lower threshold = more trades
         retrain_interval: int = 100,
         model_path: str = "models/adaptive_ml_model.pkl",
         use_sentiment: bool = True,
@@ -232,14 +232,16 @@ class AdaptiveMLStrategy(BaseStrategy):
         X_train_scaled = self.scaler.fit_transform(X_train)
         X_test_scaled = self.scaler.transform(X_test)
         
-        # Train Random Forest
+        # Train Random Forest with optimized hyperparameters
         self.model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            min_samples_split=5,
-            min_samples_leaf=2,
+            n_estimators=200,  # More trees for better accuracy
+            max_depth=15,  # Deeper trees to capture complex patterns
+            min_samples_split=3,  # Less conservative splitting
+            min_samples_leaf=1,  # Allow more granular leaves
+            max_features='sqrt',  # Better feature selection
             random_state=42,
-            class_weight='balanced'
+            class_weight='balanced',  # Handle imbalanced classes
+            n_jobs=-1  # Use all CPU cores for faster training
         )
         
         self.model.fit(X_train_scaled, y_train)
