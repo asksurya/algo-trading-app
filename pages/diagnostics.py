@@ -5,11 +5,15 @@ Debug trading signals and strategy behavior.
 """
 
 import streamlit as st
+
+# Authentication - MUST BE FIRST
+import sys
+sys.path.append('..')
+from auth import require_auth
+require_auth()
+
 import pandas as pd
 from datetime import datetime, timedelta
-import sys
-
-sys.path.append('..')
 
 from src.data.data_fetcher import DataFetcher
 from src.strategies.sma_crossover import SMACrossoverStrategy

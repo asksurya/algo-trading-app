@@ -5,12 +5,16 @@ Automated trading with strategy selection and execution via Alpaca.
 """
 
 import streamlit as st
+
+# Authentication - MUST BE FIRST
+import sys
+sys.path.append('..')
+from auth import require_auth
+require_auth()
+
 import pandas as pd
 from datetime import datetime, timedelta
-import sys
 import time
-
-sys.path.append('..')
 
 from src.trading.live_trader import LiveTrader
 from src.strategies.sma_crossover import SMACrossoverStrategy
