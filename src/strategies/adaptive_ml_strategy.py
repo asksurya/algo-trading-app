@@ -269,8 +269,12 @@ class AdaptiveMLStrategy(BaseStrategy):
         Returns:
             Series with signals (1=BUY, -1=SELL, 0=HOLD)
         """
-        # Train if not trained
+        # Train if not trained and have enough data
         if not self.is_trained:
+            if len(data) < 100:
+                # Not enough data to train, return HOLD signals
+                print(f"Warning: Only {len(data)} samples, need 100+ for training. Returning HOLD.")
+                return pd.Series(0, index=data.index)
             print("Training model on provided data...")
             self.train_model(data)
         

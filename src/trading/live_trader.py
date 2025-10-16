@@ -193,8 +193,9 @@ class LiveTrader:
         signals = {}
         
         # Fetch recent data for signal generation
+        # Need more data for Adaptive ML (requires 100+ samples after NaN removal)
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=60)  # Last 60 days for indicators
+        start_date = end_date - timedelta(days=180)  # Last 180 days for ML strategies
         
         for symbol in self.symbols:
             if symbol not in self.best_strategies:
