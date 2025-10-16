@@ -5,10 +5,14 @@ Debug trading signals and strategy behavior.
 """
 
 import streamlit as st
-import pandas as pd
-import sys
 
+# Authentication check - redirect if not logged in
+import sys
 sys.path.append('..')
+from auth import require_auth
+require_auth()
+
+import pandas as pd
 from datetime import datetime, timedelta
 
 from src.data.data_fetcher import DataFetcher

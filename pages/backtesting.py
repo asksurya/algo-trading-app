@@ -5,13 +5,17 @@ A user-friendly web interface for backtesting and analyzing trading strategies.
 """
 
 import streamlit as st
+
+# Authentication check - redirect if not logged in
+import sys
+sys.path.append('.')
+from auth import require_auth
+require_auth()
+
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
-import sys
-
-sys.path.append('.')
 
 from src.strategies.sma_crossover import SMACrossoverStrategy
 from src.strategies.rsi_strategy import RSIStrategy

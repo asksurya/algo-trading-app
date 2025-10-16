@@ -5,10 +5,14 @@ Automated trading with strategy selection and execution via Alpaca.
 """
 
 import streamlit as st
-import pandas as pd
-import sys
 
+# Authentication check - redirect if not logged in
+import sys
 sys.path.append('..')
+from auth import require_auth
+require_auth()
+
+import pandas as pd
 from datetime import datetime, timedelta
 import time
 
