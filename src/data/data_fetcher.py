@@ -81,45 +81,101 @@ class DataFetcher:
         start_date: str,
         end_date: str,
         timeframe: str = '1D',
-        use_cache: bool = False  # Changed default to False to always fetch fresh adjusted data
+        use_cache: bool = True  # Default to True - use database cache
     ) -> pd.DataFrame:
         """
-        Fetch historical market data.
+        Fetch historical market data with database caching.
         
         Args:
             symbol: Stock symbol (e.g., 'AAPL')
             start_date: Start date (YYYY-MM-DD)
             end_date: End date (YYYY-MM-DD)
             timeframe: Data timeframe ('1D', '1H', '15Min', etc.)
-            use_cache: Whether to use cached data (default: False for fresh adjusted prices)
+            use_cache: Whether to use database cache (default: True)
             
         Returns:
             DataFrame with split-adjusted OHLCV data
         
-        Note: Cache is disabled by default to ensure you always get the latest
-        split-adjusted prices. Old cached data may have unadjusted prices.
+        Note: Uses database cache to store historical data. Only fetches new data
+        since the last cached date, making subsequent fetches much faster.
         """
-        # Check cache first
-        cache_file = self._get_cache_filename(symbol, start_date, end_date, timeframe)
+        from src.trading.state_manager import StateManager
+        from datetime import datetime, timedelta
         
-        if use_cache and os.path.exists(cache_file):
-            self.logger.info(f"Loading cached data for {symbol}")
-            return pd.read_csv(cache_file, index_col=0, parse_dates=True)
+        # Only use database cache for daily data
+        if use_cache and timeframe == '1D':
+            state_manager = StateManager()
+            
+            # Check if we have cached data
+            last_cached_date = state_manager.get_last_cached_date(symbol)
+            
+            if last_cached_date:
+                self.logger.info(f"Found cached data for {symbol} up to {last_cached_date}")
+                
+                # Get cached data
+                cached_df = state_manager.get_cached_price_data(symbol, start_date, end_date)
+                
+                # Calculate if we need to fetch new data
+                last_date = datetime.strptime(last_cached_date, '%Y-%m-%d')
+                end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+                
+                # If cache is up to date, return it
+                if last_date >= end_datetime:
+                    self.logger.info(f"Cache is up to date for {symbol}")
+                    return cached_df
+                
+                # Fetch only new data since last cached date
+                fetch_start = (last_date + timedelta(days=1)).strftime('%Y-%m-%d')
+                self.logger.info(f"Fetching new data for {symbol} from {fetch_start} to {end_date}")
+                
+                if self.data_provider == 'alpaca':
+                    new_df = self._fetch_alpaca_data(symbol, fetch_start, end_date, timeframe)
+                else:
+                    new_df = self._fetch_yahoo_data(symbol, fetch_start, end_date)
+                
+                # Save new data to cache
+                if new_df is not None and not new_df.empty:
+                    state_manager.save_price_data(symbol, new_df)
+                    
+                    # Combine cached and new data
+                    combined_df = pd.concat([cached_df, new_df])
+                    combined_df = combined_df[~combined_df.index.duplicated(keep='last')]
+                    combined_df = combined_df.sort_index()
+                    
+                    # Filter to requested date range
+                    combined_df = combined_df.loc[start_date:end_date]
+                    
+                    self.logger.info(f"Combined cache + new data: {len(combined_df)} rows for {symbol}")
+                    return combined_df
+                
+                return cached_df
+            
+            else:
+                # No cache, fetch all data
+                self.logger.info(f"No cache found for {symbol}, fetching all historical data")
+                
+                if self.data_provider == 'alpaca':
+                    df = self._fetch_alpaca_data(symbol, start_date, end_date, timeframe)
+                else:
+                    df = self._fetch_yahoo_data(symbol, start_date, end_date)
+                
+                # Save to cache
+                if df is not None and not df.empty:
+                    state_manager.save_price_data(symbol, df)
+                    self.logger.info(f"Saved {len(df)} rows to cache for {symbol}")
+                
+                return df
         
-        # Fetch new data
-        self.logger.info(f"Fetching {symbol} data from {start_date} to {end_date}")
-        
-        if self.data_provider == 'alpaca':
-            df = self._fetch_alpaca_data(symbol, start_date, end_date, timeframe)
         else:
-            df = self._fetch_yahoo_data(symbol, start_date, end_date)
-        
-        # Cache the data
-        if use_cache and df is not None and not df.empty:
-            df.to_csv(cache_file)
-            self.logger.info(f"Data cached to {cache_file}")
-        
-        return df
+            # Not using cache or not daily data, fetch directly
+            self.logger.info(f"Fetching {symbol} data from {start_date} to {end_date} (no cache)")
+            
+            if self.data_provider == 'alpaca':
+                df = self._fetch_alpaca_data(symbol, start_date, end_date, timeframe)
+            else:
+                df = self._fetch_yahoo_data(symbol, start_date, end_date)
+            
+            return df
     
     def _fetch_alpaca_data(
         self,

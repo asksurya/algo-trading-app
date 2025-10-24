@@ -102,14 +102,14 @@ class LiveTrader:
     
     def evaluate_strategies(
         self,
-        lookback_days: int = 365,
+        lookback_days: int = None,
         metric: str = 'sharpe_ratio'
     ) -> Dict[str, Dict]:
         """
         Run backtests to find best strategy for each symbol.
         
         Args:
-            lookback_days: Days of historical data for backtest
+            lookback_days: Days of historical data for backtest (None = use all available data)
             metric: Metric to optimize ('sharpe_ratio', 'total_return_pct', 'profit_factor')
         
         Returns:
@@ -118,7 +118,14 @@ class LiveTrader:
         self.logger.info(f"Evaluating {len(self.strategy_templates)} strategies on {len(self.symbols)} symbols")
         
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=lookback_days)
+        
+        # If lookback_days is None, use all available data (20 years max for Yahoo Finance)
+        if lookback_days is None:
+            start_date = end_date - timedelta(days=20*365)  # 20 years max
+            self.logger.info("Using maximum available historical data (up to 20 years)")
+        else:
+            start_date = end_date - timedelta(days=lookback_days)
+            self.logger.info(f"Using {lookback_days} days of historical data")
         
         results = {}
         

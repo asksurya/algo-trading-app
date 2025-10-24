@@ -68,19 +68,26 @@ with col1:
 with col2:
     st.markdown("""
     <div class="feature-card">
-        <h3>🤖 Live Trading</h3>
-        <p>Automated trading with Alpaca API integration</p>
+        <h3>🤖 Live Trading (Multiple Versions)</h3>
+        <p>Choose the version that fits your deployment:</p>
         <ul>
-            <li>Paper & live trading modes</li>
-            <li>Auto strategy evaluation</li>
-            <li>Portfolio monitoring</li>
-            <li>Real-time signal generation</li>
+            <li><strong>V2.5 (Cloud)</strong>: Auto-eval all strategies, works on Streamlit Cloud</li>
+            <li><strong>V2 (VPS)</strong>: 24/7 operation with background daemon</li>
+            <li><strong>V1 (Legacy)</strong>: Manual strategy selection</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
     
-    if st.button("💰 Start Live Trading", key="live", type="primary"):
-        st.switch_page("pages/live_trading.py")
+    col2a, col2b, col2c = st.columns(3)
+    with col2a:
+        if st.button("☁️ V2.5 Cloud", key="live_v25", type="primary"):
+            st.switch_page("pages/live_trading_v2_5.py")
+    with col2b:
+        if st.button("🖥️ V2 VPS", key="live_v2", type="secondary"):
+            st.switch_page("pages/live_trading_v2.py")
+    with col2c:
+        if st.button("📊 V1", key="live", type="secondary"):
+            st.switch_page("pages/live_trading.py")
 
 with col3:
     st.markdown("""
