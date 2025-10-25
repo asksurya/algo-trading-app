@@ -76,3 +76,4 @@ htmlcov/
 *.jpg
 *.jpeg
 charts/
+backend/.env.bak

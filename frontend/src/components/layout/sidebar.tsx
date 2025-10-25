@@ -8,6 +8,11 @@ import {
   TrendingUp,
   BarChart3,
   Settings,
+  Shield,
+  Bell,
+  Activity,
+  Zap,
+  Rocket,
 } from "lucide-react";
 
 const navigation = [
@@ -20,6 +25,31 @@ const navigation = [
     name: "Strategies",
     href: "/dashboard/strategies",
     icon: TrendingUp,
+  },
+  {
+    name: "Backtests",
+    href: "/dashboard/backtests",
+    icon: Activity,
+  },
+  {
+    name: "Strategy Optimizer",
+    href: "/dashboard/optimizer",
+    icon: Zap,
+  },
+  {
+    name: "Live Trading",
+    href: "/dashboard/live-trading",
+    icon: Rocket,
+  },
+  {
+    name: "Risk Rules",
+    href: "/dashboard/risk-rules",
+    icon: Shield,
+  },
+  {
+    name: "Notifications",
+    href: "/dashboard/notifications",
+    icon: Bell,
   },
   {
     name: "Trades",

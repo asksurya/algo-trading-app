@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 from app.models.backtest import Backtest, BacktestResult, BacktestTrade, BacktestStatus
 from app.models.strategy import Strategy
-from app.integrations.market_data import get_market_data_service
+from app.services.market_data_cache_service import MarketDataCacheService
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class BacktestRunner:
     
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.market_data = get_market_data_service()
+        self.cache_service = MarketDataCacheService(session)
         
     async def run_backtest(self, backtest_id: UUID) -> Dict[str, Any]:
         """
@@ -59,12 +59,14 @@ class BacktestRunner:
             backtest.started_at = datetime.utcnow()
             await self.session.commit()
             
-            # Fetch historical data
+            # Fetch historical data (with caching)
             logger.info(f"Fetching data for backtest {backtest_id}")
-            hist_data = await self._fetch_historical_data(
-                strategy.tickers[0].ticker if strategy.tickers else "SPY",
-                backtest.start_date,
-                backtest.end_date
+            symbol = strategy.tickers[0].ticker if strategy.tickers else "SPY"
+            hist_data = await self.cache_service.get_historical_data(
+                symbol=symbol,
+                start_date=backtest.start_date,
+                end_date=backtest.end_date,
+                force_refresh=False  # Use cache by default
             )
             
             # Run backtest (simplified - would integrate with src/backtesting/backtest_engine.py)
@@ -116,40 +118,8 @@ class BacktestRunner:
             await self.session.commit()
             raise
             
-    async def _fetch_historical_data(
-        self,
-        symbol: str,
-        start_date: datetime,
-        end_date: datetime
-    ) -> pd.DataFrame:
-        """Fetch historical market data."""
-        try:
-            bars = await self.market_data.get_bars(
-                symbol=symbol,
-                start=start_date,
-                end=end_date,
-                timeframe="1Day"
-            )
-            
-            # Convert to DataFrame
-            df = pd.DataFrame([
-                {
-                    "timestamp": bar.timestamp,
-                    "open": float(bar.open),
-                    "high": float(bar.high),
-                    "low": float(bar.low),
-                    "close": float(bar.close),
-                    "volume": int(bar.volume),
-                }
-                for bar in bars
-            ])
-            
-            df.set_index("timestamp", inplace=True)
-            return df
-            
-        except Exception as e:
-            logger.error(f"Failed to fetch data for {symbol}: {e}")
-            raise
+    # Note: _fetch_historical_data and _fetch_single_chunk methods removed
+    # All data fetching now handled by MarketDataCacheService
             
     async def _execute_backtest(
         self,

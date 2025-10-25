@@ -86,7 +86,9 @@ from app.api.v1 import (
     backtests,
     risk_rules,
     api_keys,
-    notifications
+    notifications,
+    optimizer,
+    live_trading
 )
 
 app.include_router(
@@ -143,6 +145,16 @@ app.include_router(
     notifications.router,
     prefix=f"{settings.API_V1_STR}/notifications",
     tags=["Notifications"]
+)
+app.include_router(
+    optimizer.router,
+    prefix=f"{settings.API_V1_STR}",
+    tags=["Strategy Optimizer"]
+)
+app.include_router(
+    live_trading.router,
+    prefix=f"{settings.API_V1_STR}",
+    tags=["Live Trading Automation"]
 )
 
 
