@@ -17,7 +17,7 @@ export default function LiveTradingPage() {
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      router.push('/auth/login');
+      router.push('/login');
       return;
     }
     setToken(token);

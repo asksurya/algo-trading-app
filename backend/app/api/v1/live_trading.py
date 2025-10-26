@@ -17,7 +17,7 @@ from app.schemas.live_strategy import (
     SignalHistoryResponse, LiveStrategyStatusResponse,
     DashboardResponse, DashboardSummary, StartStrategyRequest, ControlResponse
 )
-from app.core.security import get_current_user
+from app.dependencies import get_current_user
 from app.services.strategy_scheduler import StrategyScheduler
 from app.integrations.alpaca_client import AlpacaClient
 from app.integrations.order_execution import AlpacaOrderExecutor
