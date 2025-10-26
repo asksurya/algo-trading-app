@@ -1,29 +1,90 @@
-# Docker Compose for Algo Trading App
 version: '3.8'
 
 services:
-  app:
-    build: .
-    container_name: algo-trading-app
-    ports:
-      - "8501:8501"
+  postgres:
+    image: postgres:17-alpine
+    container_name: algo-trading-postgres
     environment:
-      # Add your API keys here or use .env file
-      - ALPACA_API_KEY=${ALPACA_API_KEY}
-      - ALPACA_SECRET_KEY=${ALPACA_SECRET_KEY}
-      - NEWSAPI_KEY=${NEWSAPI_KEY}
-      - ALPHA_VANTAGE_KEY=${ALPHA_VANTAGE_KEY}
+      POSTGRES_USER: trading_user
+      POSTGRES_PASSWORD: trading_pass
+      POSTGRES_DB: trading_db
+    ports:
+      - "5432:5432"
     volumes:
-      # Mount config directory to persist settings
-      - ./config:/app/config
-      # Mount data directory for caching
-      - ./data:/app/data
-      # Mount models directory for ML persistence
-      - ./models:/app/models
-    restart: unless-stopped
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      test: ["CMD-SHELL", "pg_isready -U trading_user -d trading_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - algo-trading-network
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: algo-trading-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - algo-trading-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: algo-trading-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://trading_user:trading_pass@postgres:5432/trading_db
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
+    networks:
+      - algo-trading-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: algo-trading-frontend
+    ports:
+      - "3002:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8000}
+      NEXT_PUBLIC_APP_NAME: Algo Trading Platform
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - algo-trading-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  algo-trading-network:
+    driver: bridge
