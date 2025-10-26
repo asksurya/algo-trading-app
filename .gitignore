@@ -48,7 +48,6 @@ trading.log
 # Data
 data/cache/
 *.csv
-*.json
 
 # Models (will be retrained on cloud)
 models/
