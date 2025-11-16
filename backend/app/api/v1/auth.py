@@ -60,7 +60,6 @@ async def register(
     
     db.add(new_user)
     await db.commit()
-    await db.refresh(new_user)
     
     return new_user
 

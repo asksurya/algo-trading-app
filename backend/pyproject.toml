@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "FastAPI backend for algo trading web application"
 authors = ["Trading Team <team@example.com>"]
 readme = "README.md"
+packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"

@@ -19,69 +19,75 @@ def test_register_user(client):
     assert "id" in data
 
 
-def test_register_duplicate_email(client, test_user):
+def test_register_duplicate_email(client, committed_test_user):
     """Test registration with duplicate email."""
     response = client.post(
         "/api/v1/auth/register",
         json={
-            "email": test_user.email,
+            "email": committed_test_user.email,
             "password": "SomePass123!",
             "full_name": "Another User"
         }
     )
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Email already registered" in response.json()["detail"]
 
 
-def test_login_success(client, test_user):
+def test_login_success(client, committed_test_user):
     """Test successful login."""
     response = client.post(
         "/api/v1/auth/login",
         json={
-            "email": "test@example.com",
+            "email": committed_test_user.email,
             "password": "testpass123"
         }
     )
     assert response.status_code == status.HTTP_200_OK
+    assert "access_token" in response.json()
     data = response.json()
     assert "access_token" in data
     assert "refresh_token" in data
     assert data["token_type"] == "bearer"
 
 
-def test_login_wrong_password(client, test_user):
+def test_login_wrong_password(client, committed_test_user):
     """Test login with wrong password."""
     response = client.post(
         "/api/v1/auth/login",
         json={
-            "email": "test@example.com",
+            "email": committed_test_user.email,
             "password": "wrongpassword"
         }
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Incorrect email or password"
 
 
 def test_login_nonexistent_user(client):
-    """Test login with non-existent user."""
+    """Test login with a non-existent user."""
     response = client.post(
         "/api/v1/auth/login",
         json={
             "email": "nonexistent@example.com",
-            "password": "somepassword"
+            "password": "AnyPassword123!"
         }
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Incorrect email or password"
 
 
-def test_get_current_user(client, auth_headers):
-    """Test getting current user information."""
+async def test_get_current_user(client, committed_test_user, auth_headers):
+    """Test retrieving current user information."""
     response = client.get("/api/v1/auth/me", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK
-    data = response.json()
-    assert data["email"] == "test@example.com"
-    assert data["full_name"] == "Test User"
+    user_data = response.json()
+    assert user_data["email"] == committed_test_user.email
+    assert user_data["full_name"] == committed_test_user.full_name
+    assert user_data["role"] == committed_test_user.role.value
 
 
 def test_get_current_user_unauthorized(client):
-    """Test getting current user without authentication."""
+    """Test retrieving current user information without authentication."""
     response = client.get("/api/v1/auth/me")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    assert response.json()["detail"] == "Could not validate credentials"

@@ -4,7 +4,7 @@ Run this with: poetry run python test_api.py
 """
 import asyncio
 import httpx
-from app.database import async_session_maker
+from app.database import get_async_session_local
 from app.models import user as user_model
 from sqlalchemy import select
 
@@ -73,7 +73,8 @@ async def test_login(email: str, password: str):
 async def check_database():
     """Check database connection and tables."""
     try:
-        async with async_session_maker() as session:
+        AsyncSessionLocal = get_async_session_local()
+        async with AsyncSessionLocal() as session:
             # Check if user table exists and query it
             result = await session.execute(select(user_model.User))
             users = result.scalars().all()

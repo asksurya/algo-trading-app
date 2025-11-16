@@ -28,7 +28,7 @@ ssh root@your-vps-ip
 # Navigate to project or clone fresh
 cd ~
 rm -rf algo-trading-app  # Remove old version if exists
-git clone https://github.com/yourusername/algo-trading-app.git
+git clone https://github.com/asksurya/algo-trading-app.git
 cd algo-trading-app
 ```
 
@@ -44,8 +44,8 @@ DATABASE_URL=postgresql://trading_user:trading_pass@postgres:5432/trading_db
 REDIS_URL=redis://redis:6379
 
 # Security - CHANGE THESE!
-SECRET_KEY=your-super-secret-key-min-32-chars-change-this
-ENCRYPTION_KEY=your-encryption-key-32-bytes-base64-change-this
+SECRET_KEY=n_NgZRjpZNKE3sXO9idmdUzF-dU5N1wUVFiWNf_U6_M
+ENCRYPTION_KEY=mMnuAN0tZAVZX0zhYa1673ThNaOIzQYH8aXkmODAFow=
 
 # Alpaca API
 ALPACA_API_KEY=your_alpaca_api_key_here

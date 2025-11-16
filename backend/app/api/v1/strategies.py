@@ -54,15 +54,12 @@ async def create_strategy(
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Create a new trading strategy.
-    
-    - **name**: Strategy name
-    - **description**: Optional description
-    - **strategy_type**: Type of strategy (e.g., 'bollinger_bands', 'momentum')
-    - **parameters**: Strategy-specific parameters as JSON
-    - **tickers**: List of tickers to trade with this strategy
-    """
+    print(f"\n--- Debug: create_strategy endpoint START ---")
+    print(f"create_strategy: db object at start: {db}")
+    print(f"create_strategy: type of db at start: {type(db)}")
+    print(f"create_strategy: current_user.id: {current_user.id}")
+    print(f"create_strategy: strategy_data: {strategy_data.dict()}")
+
     # Create strategy
     new_strategy = Strategy(
         user_id=current_user.id,
@@ -71,22 +68,44 @@ async def create_strategy(
         strategy_type=strategy_data.strategy_type,
         parameters=strategy_data.parameters,
     )
+    print(f"create_strategy: New strategy object created: {new_strategy}")
     
+    print(f"create_strategy: Adding new_strategy to db session.")
     db.add(new_strategy)
-    await db.commit()
+    print(f"create_strategy: Calling db.commit() (mocked to flush).")
+    await db.commit() # This is now db.flush() in tests
+    print(f"create_strategy: db.commit() (flush) completed.")
+    print(f"create_strategy: Calling db.refresh(new_strategy).")
     await db.refresh(new_strategy)
+    print(f"create_strategy: db.refresh(new_strategy) completed. new_strategy ID: {new_strategy.id}")
+    print(f"create_strategy: db object after refresh: {db}")
+    print(f"create_strategy: type of db after refresh: {type(db)}")
+    print(f"create_strategy: Calling db.expire(new_strategy).")
+    await db.expire(new_strategy) # <--- Error occurs here
+    print(f"create_strategy: db.expire(new_strategy) called successfully.")
     
     # Add tickers if provided
     if strategy_data.tickers:
+        print(f"create_strategy: Tickers provided: {strategy_data.tickers}")
         for ticker in strategy_data.tickers:
             strategy_ticker = StrategyTicker(
                 strategy_id=new_strategy.id,
                 ticker=ticker,
             )
+            print(f"create_strategy: Adding strategy_ticker: {strategy_ticker.ticker}")
             db.add(strategy_ticker)
         
+        print(f"create_strategy: Calling db.commit() (mocked to flush) for tickers.")
         await db.commit()
+        print(f"create_strategy: db.commit() (flush) for tickers completed.")
+        print(f"create_strategy: db object after ticker commit: {db}")
+        print(f"create_strategy: type of db after ticker commit: {type(db)}")
+        print(f"create_strategy: Calling db.expire(new_strategy) after ticker commit.")
+        await db.expire(new_strategy) # Also expire after ticker commit
+        print(f"create_strategy: db.expire(new_strategy) after ticker commit called successfully.")
     
+    print(f"create_strategy: Returning new_strategy: {new_strategy.id}")
+    print(f"--- Debug: create_strategy endpoint END ---")
     return new_strategy
 
 

@@ -10,31 +10,38 @@ from sqlalchemy.pool import NullPool
 from app.core.config import settings
 
 
-# Create async engine
-# Convert postgresql:// to postgresql+asyncpg://
-async_database_url = settings.DATABASE_URL.replace(
-    "postgresql://", "postgresql+asyncpg://"
-)
-
-engine = create_async_engine(
-    async_database_url,
-    echo=settings.DATABASE_ECHO,
-    poolclass=NullPool if settings.is_development else None,
-    pool_pre_ping=True,
-)
-
-# Create async session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-    autocommit=False,
-    autoflush=False,
-)
-
 # Base class for models
 Base = declarative_base()
 
+_engine = None
+_async_session_local = None
+
+def get_engine():
+    global _engine
+    if _engine is None:
+        # Convert postgresql:// to postgresql+asyncpg://
+        async_database_url = settings.DATABASE_URL.replace(
+            "postgresql://", "postgresql+asyncpg://"
+        )
+        _engine = create_async_engine(
+            async_database_url,
+            echo=settings.DATABASE_ECHO,
+            poolclass=NullPool if settings.is_development else None,
+            pool_pre_ping=True,
+        )
+    return _engine
+
+def get_async_session_local():
+    global _async_session_local
+    if _async_session_local is None:
+        _async_session_local = async_sessionmaker(
+            get_engine(),
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+    return _async_session_local
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -45,6 +52,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         async def get_users(db: AsyncSession = Depends(get_db)):
             ...
     """
+    AsyncSessionLocal = get_async_session_local()
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -58,6 +66,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_db() -> None:
     """Initialize database tables."""
+    engine = get_engine()
     async with engine.begin() as conn:
         # Import all models here to ensure they are registered
         from app.models import user, strategy, trade  # noqa
@@ -67,4 +76,5 @@ async def init_db() -> None:
 
 async def close_db() -> None:
     """Close database connections."""
+    engine = get_engine()
     await engine.dispose()
