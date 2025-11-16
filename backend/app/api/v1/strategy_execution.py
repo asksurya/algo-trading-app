@@ -36,20 +36,33 @@ async def start_strategy_execution(
     
     Creates or activates StrategyExecution record for the strategy.
     """
+    print(f"\n--- Debug: start_strategy_execution endpoint START ---")
+    print(f"start_strategy_execution: Received strategy_id: {strategy_id}")
+    print(f"start_strategy_execution: Current user ID: {current_user.id}")
+    print(f"start_strategy_execution: Session object: {session}")
+    print(f"start_strategy_execution: Type of session: {type(session)}")
+
     # Verify strategy exists and belongs to user
+    print(f"start_strategy_execution: Executing query for strategy...")
     result = await session.execute(
         select(Strategy)
         .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
     
+    print(f"start_strategy_execution: Strategy found in DB: {strategy is not None}")
+    if strategy:
+        print(f"start_strategy_execution: Strategy details: ID={strategy.id}, UserID={strategy.user_id}")
+
     if not strategy:
+        print(f"start_strategy_execution: Strategy not found, raising 404.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
     
     # Check if execution already exists
+    print(f"start_strategy_execution: Checking for existing execution for strategy_id: {strategy_id}")
     result = await session.execute(
         select(StrategyExecution)
         .where(StrategyExecution.strategy_id == strategy_id)
@@ -57,8 +70,10 @@ async def start_strategy_execution(
     execution = result.scalar_one_or_none()
     
     if execution:
+        print(f"start_strategy_execution: Existing execution found: {execution.id}, is_active: {execution.is_active}")
         # Reactivate existing execution
         if execution.is_active:
+            print(f"start_strategy_execution: Execution already active.")
             return {
                 "success": True,
                 "message": "Strategy execution already active",
@@ -69,11 +84,13 @@ async def start_strategy_execution(
                 }
             }
         
+        print(f"start_strategy_execution: Reactivating existing execution.")
         execution.is_active = True
         execution.state = ExecutionState.RUNNING
         execution.error_message = None
         execution.error_count = 0
     else:
+        print(f"start_strategy_execution: Creating new execution for strategy_id: {strategy_id}")
         # Create new execution
         execution = StrategyExecution(
             strategy_id=strategy_id,
@@ -82,14 +99,22 @@ async def start_strategy_execution(
         )
         session.add(execution)
     
+    print(f"start_strategy_execution: Calling session.commit() (mocked to flush).")
     await session.commit()
+    print(f"start_strategy_execution: session.commit() (flush) completed.")
+    print(f"start_strategy_execution: Calling session.refresh(execution).")
     await session.refresh(execution)
+    print(f"start_strategy_execution: session.refresh(execution) completed. Execution ID: {execution.id}")
     
     # Ensure scheduler is running
+    print(f"start_strategy_execution: Ensuring scheduler is running.")
     scheduler = get_scheduler()
     if not scheduler.is_running:
         scheduler.start()
+        print(f"start_strategy_execution: Scheduler started.")
     
+    print(f"start_strategy_execution: Returning success response.")
+    print(f"--- Debug: start_strategy_execution endpoint END ---")
     return {
         "success": True,
         "message": "Strategy execution started",

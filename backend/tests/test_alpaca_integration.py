@@ -12,6 +12,19 @@ from app.integrations.alpaca_client import AlpacaClient, AlpacaAPIError, RateLim
 from app.integrations.cache import CacheManager
 from alpaca.common.exceptions import APIError
 
+class MockAPIError(APIError):
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+        self._status_code = status_code
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+    @status_code.setter
+    def status_code(self, value):
+        self._status_code = value
+
 
 # ============================================================================
 # Fixtures
@@ -267,7 +280,7 @@ class TestAlpacaClient:
         client = AlpacaClient()
         
         with patch.object(client, '_client') as mock_trading_client:
-            mock_trading_client.get_account.side_effect = APIError("API Error", status_code=401)
+            mock_trading_client.get_account.side_effect = MockAPIError("API Error", status_code=401)
             
             with patch('app.integrations.alpaca_client.get_cache_manager') as mock_cache:
                 mock_cache_instance = AsyncMock()
@@ -312,16 +325,19 @@ class TestBrokerEndpoints:
         """Test that account endpoint requires authentication."""
         response = client.get("/api/v1/broker/account")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.json()["detail"] == "Could not validate credentials"
     
     def test_get_positions_endpoint_requires_auth(self, client):
         """Test that positions endpoint requires authentication."""
         response = client.get("/api/v1/broker/positions")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.json()["detail"] == "Could not validate credentials"
     
     def test_get_orders_endpoint_requires_auth(self, client):
         """Test that orders endpoint requires authentication."""
         response = client.get("/api/v1/broker/orders")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.json()["detail"] == "Could not validate credentials"
     
     def test_get_orders_invalid_status_filter(self, client):
         """Test that invalid status filter returns 400."""

@@ -14,7 +14,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import AsyncSessionLocal
+from app.database import get_async_session_local
 from app.models.strategy_execution import StrategyExecution, ExecutionState
 from app.strategies.executor import StrategyExecutor
 
@@ -129,6 +129,7 @@ class StrategyScheduler:
             
     async def _evaluate_strategies_async(self):
         """Async implementation of strategy evaluation."""
+        AsyncSessionLocal = get_async_session_local()
         async with AsyncSessionLocal() as session:
             try:
                 # Get all active strategy executions
@@ -252,6 +253,7 @@ class StrategyScheduler:
             
     async def _reset_daily_counters_async(self):
         """Async implementation of daily counter reset."""
+        AsyncSessionLocal = get_async_session_local()
         async with AsyncSessionLocal() as session:
             try:
                 # Get all active executions
