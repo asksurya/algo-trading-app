@@ -1,57 +1,45 @@
-# Multi-stage build for production-ready FastAPI application
+# Production-ready Dockerfile for FastAPI backend
+
+# --- Builder Stage ---
 FROM python:3.12-slim as builder
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+# Set Poetry environment variables
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=1 \
+    POETRY_VIRTUALENVS_CREATE=1 \
+    POETRY_CACHE_DIR=/tmp/poetry_cache
 
 # Install Poetry
-RUN pip install poetry==1.7.0
+RUN pip install poetry
 
-# Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+# Copy dependency definition files
+COPY pyproject.toml poetry.lock ./
 
-# Configure poetry to not create virtual env
-RUN poetry config virtualenvs.create false
+# Install dependencies (without dev dependencies)
+RUN poetry install --no-dev
 
-# Install dependencies
-RUN poetry install --no-dev --no-interaction --no-ansi
-
-# Production stage
+# --- Runner Stage ---
 FROM python:3.12-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy installed packages from builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /usr/local/bin /usr/local/bin
-
-# Copy application code and configuration
-COPY ./app ./app
-COPY ./alembic.ini ./alembic.ini
-COPY ./migrations ./migrations
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Set non-root user
+RUN useradd --create-home --shell /bin/bash appuser
 USER appuser
+
+# Copy virtual environment from builder stage
+COPY --from=builder /app/.venv ./.venv
+
+# Activate virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copy application code
+COPY ./app ./app
 
 # Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
-
-# Run application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run with Gunicorn
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "gunicorn_conf.py", "app.main:app"]

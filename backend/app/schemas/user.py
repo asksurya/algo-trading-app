@@ -3,7 +3,7 @@ Pydantic schemas for user-related requests and responses.
 """
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.models.user import UserRole
 
 
@@ -17,7 +17,7 @@ class UserCreate(UserBase):
     """Schema for user creation."""
     password: str = Field(..., min_length=8)
     
-    @validator("password")
+    @field_validator("password")
     def validate_password(cls, v: str) -> str:
         """Validate password strength."""
         if len(v) < 8:
@@ -41,7 +41,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(UserBase):
     """Schema for user response."""
-    id: str
+    id: int
     role: UserRole
     is_active: bool
     is_verified: bool
@@ -77,7 +77,7 @@ class PasswordChange(BaseModel):
     current_password: str
     new_password: str = Field(..., min_length=8)
     
-    @validator("new_password")
+    @field_validator("new_password")
     def validate_password(cls, v: str) -> str:
         """Validate password strength."""
         if len(v) < 8:
