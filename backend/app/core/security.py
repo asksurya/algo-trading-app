@@ -101,6 +101,7 @@ def decode_token(token: str) -> Optional[dict]:
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM]
         )
+        print(f"payload from token: {payload}")
         return payload
     except JWTError:
         return None

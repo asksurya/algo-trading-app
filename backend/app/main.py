@@ -79,16 +79,16 @@ from app.api.v1 import (
     auth, 
     users, 
     strategies, 
-    trades, 
-    broker, 
-    orders, 
+    # trades,
+    # broker,
+    # orders,
     strategy_execution, 
-    backtests,
-    risk_rules,
-    api_keys,
-    notifications,
-    optimizer,
-    live_trading
+    # backtests,
+    # risk_rules,
+    # api_keys,
+    # notifications,
+    # optimizer,
+    # live_trading
 )
 
 app.include_router(
@@ -111,51 +111,51 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}/strategies/execution",
     tags=["Strategy Execution"]
 )
-app.include_router(
-    trades.router,
-    prefix=f"{settings.API_V1_STR}/trades",
-    tags=["Trades & Positions"]
-)
-app.include_router(
-    broker.router,
-    prefix=f"{settings.API_V1_STR}/broker",
-    tags=["Broker & Market Data"]
-)
-app.include_router(
-    orders.router,
-    prefix=f"{settings.API_V1_STR}/orders",
-    tags=["Order Execution"]
-)
-app.include_router(
-    backtests.router,
-    prefix=f"{settings.API_V1_STR}/backtests",
-    tags=["Backtesting"]
-)
-app.include_router(
-    risk_rules.router,
-    prefix=f"{settings.API_V1_STR}/risk-rules",
-    tags=["Risk Management"]
-)
-app.include_router(
-    api_keys.router,
-    prefix=f"{settings.API_V1_STR}/api-keys",
-    tags=["API Key Management"]
-)
-app.include_router(
-    notifications.router,
-    prefix=f"{settings.API_V1_STR}/notifications",
-    tags=["Notifications"]
-)
-app.include_router(
-    optimizer.router,
-    prefix=f"{settings.API_V1_STR}",
-    tags=["Strategy Optimizer"]
-)
-app.include_router(
-    live_trading.router,
-    prefix=f"{settings.API_V1_STR}",
-    tags=["Live Trading Automation"]
-)
+# app.include_router(
+#     trades.router,
+#     prefix=f"{settings.API_V1_STR}/trades",
+#     tags=["Trades & Positions"]
+# )
+# app.include_router(
+#     broker.router,
+#     prefix=f"{settings.API_V1_STR}/broker",
+#     tags=["Broker & Market Data"]
+# )
+# app.include_router(
+#     orders.router,
+#     prefix=f"{settings.API_V1_STR}/orders",
+#     tags=["Order Execution"]
+# )
+# app.include_router(
+#     backtests.router,
+#     prefix=f"{settings.API_V1_STR}/backtests",
+#     tags=["Backtesting"]
+# )
+# app.include_router(
+#     risk_rules.router,
+#     prefix=f"{settings.API_V1_STR}/risk-rules",
+#     tags=["Risk Management"]
+# )
+# app.include_router(
+#     api_keys.router,
+#     prefix=f"{settings.API_V1_STR}/api-keys",
+#     tags=["API Key Management"]
+# )
+# app.include_router(
+#     notifications.router,
+#     prefix=f"{settings.API_V1_STR}/notifications",
+#     tags=["Notifications"]
+# )
+# app.include_router(
+#     optimizer.router,
+#     prefix=f"{settings.API_V1_STR}",
+#     tags=["Strategy Optimizer"]
+# )
+# app.include_router(
+#     live_trading.router,
+#     prefix=f"{settings.API_V1_STR}",
+#     tags=["Live Trading Automation"]
+# )
 
 
 if __name__ == "__main__":
