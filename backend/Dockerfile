@@ -37,6 +37,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY ./app ./app
+COPY gunicorn_conf.py .
+COPY alembic.ini .
+COPY migrations ./migrations
 
 # Expose port
 EXPOSE 8000

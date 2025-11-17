@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "your-firebase-project-id"
-  }
+    "default": "algo-trading-9fea5",
+    "algo_test": "algo-trading-9fea5"
+  },
+  "targets": {},
+  "etags": {}
 }

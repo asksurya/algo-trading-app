@@ -1,23 +1,14 @@
 {
-  "hosting": {
-    "public": "frontend/out",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/api/**",
-        "function": "api"
+  "apphosting": [
+    {
+      "backendId": "backend",
+      "sourceDir": "backend",
+      "buildConfig": {
+        "buildCommand": "pip install poetry && poetry install --no-dev"
       },
-      {
-        "source": "**",
-        "destination": "/index.html"
+      "runConfig": {
+        "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port 8000"
       }
-    ]
-  },
-  "functions": {
-    "source": "backend"
-  }
+    }
+  ]
 }

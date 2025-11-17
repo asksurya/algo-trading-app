@@ -30,7 +30,7 @@ alpaca-py = "^0.28.0"
 tenacity = "^8.2.3"
 pandas = "^2.2.0"
 numpy = "^2.0.0"
-pandas-ta = "0.4.71b0"
+pandas-ta = "^0.3.14b"
 apscheduler = "^3.10.4"
 aiosqlite = "^0.21.0"
 
