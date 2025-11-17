@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthStore } from "@/lib/stores/auth-store";
+import { useAuthStore, AuthState } from "@/lib/stores/auth-store";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const register = useAuthStore((state) => state.register);
+  const register = useAuthStore((state: AuthState) => state.register);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");

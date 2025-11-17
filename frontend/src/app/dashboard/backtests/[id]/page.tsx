@@ -17,7 +17,7 @@ export default function BacktestResultsPage() {
     return <div className="flex items-center justify-center h-96">Loading...</div>;
   }
 
-  const backtest = data?.data;
+  const backtest = data;
   
   if (!backtest) {
     return <div className="text-center py-12">Backtest not found</div>;

@@ -15,7 +15,7 @@ export default function BacktestsPage() {
 
   const handleDelete = (id: string) => {
     if (confirm('Are you sure you want to delete this backtest?')) {
-      deleteMutation.mutate(id);
+      deleteMutation.mutateAsync(id);
     }
   };
 

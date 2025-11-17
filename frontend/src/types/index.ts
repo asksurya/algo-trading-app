@@ -136,3 +136,98 @@ export interface APIError {
   detail: string;
   status?: number;
 }
+
+// Backtest types
+export interface Backtest {
+  id: string;
+  user_id: string;
+  strategy_id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  initial_capital: number;
+  status: 'running' | 'completed' | 'failed';
+  total_return?: number;
+  total_trades?: number;
+  win_rate?: number;
+  sharpe_ratio?: number;
+  max_drawdown?: number;
+  created_at: string;
+  results?: BacktestResults;
+  trades?: BacktestTrade[];
+}
+
+export interface BacktestResults {
+  total_return_pct: number;
+  net_profit: number;
+  total_trades: number;
+  winning_trades: number;
+  losing_trades: number;
+  win_rate: number;
+  sharpe_ratio?: number;
+  final_capital: number;
+  gross_profit: number;
+  gross_loss: number;
+  max_drawdown_pct: number;
+  avg_trade_pnl: number;
+}
+
+export interface BacktestTrade {
+    id: string;
+    symbol: string;
+    side: 'buy' | 'sell';
+    quantity: number;
+    entry_price: number;
+    exit_price?: number;
+    pnl?: number;
+    pnl_pct?: number;
+    entry_date: string;
+}
+
+export interface BacktestCreate {
+  strategy_id: string;
+  name: string;
+  description?: string;
+  start_date: string;
+  end_date: string;
+  initial_capital: number;
+  commission: number;
+  slippage: number;
+}
+
+export interface LiveStrategy {
+    id: string;
+    name: string;
+    strategy_id: number;
+    user_id: string;
+    symbols: string[];
+    check_interval: number;
+    auto_execute: boolean;
+    max_positions: number;
+    daily_loss_limit?: number;
+    position_size_pct: number;
+    max_position_size?: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface LivePosition {
+    id: string;
+    live_strategy_id: string;
+    symbol: string;
+    quantity: number;
+    avg_entry_price: number;
+    current_price: number;
+    unrealized_pnl: number;
+    status: 'open' | 'closed';
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaginatedBacktests {
+  data: Backtest[];
+  page: number;
+  limit: number;
+  total: number;
+}
