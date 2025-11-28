@@ -2,9 +2,15 @@
 FastAPI application entry point.
 """
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.core.config import settings
 from app.database import init_db, close_db
@@ -53,6 +59,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rate Limiting
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+# Production Security Features
+if not settings.is_development:
+    # HTTPS Redirection
+    app.add_middleware(HTTPSRedirectMiddleware)
+
+    # Trusted Host
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["yourdomain.com", "*.yourdomain.com"]
+    )
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+
+    return response
+
 
 @app.get("/")
 async def root():
@@ -76,19 +114,21 @@ async def health_check():
 
 # Include API routers
 from app.api.v1 import (
-    auth, 
-    users, 
-    strategies, 
-    # trades,
-    # broker,
-    # orders,
-    strategy_execution, 
-    # backtests,
-    # risk_rules,
-    # api_keys,
-    # notifications,
-    # optimizer,
-    # live_trading
+    auth,
+    users,
+    strategies,
+    trades,
+    broker,
+    orders,
+    strategy_execution,
+    backtests,
+    risk_rules,
+    api_keys,
+    notifications,
+    optimizer,
+    live_trading,
+    portfolio,
+    watchlist
 )
 
 app.include_router(
@@ -111,51 +151,61 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}/strategies/execution",
     tags=["Strategy Execution"]
 )
-# app.include_router(
-#     trades.router,
-#     prefix=f"{settings.API_V1_STR}/trades",
-#     tags=["Trades & Positions"]
-# )
-# app.include_router(
-#     broker.router,
-#     prefix=f"{settings.API_V1_STR}/broker",
-#     tags=["Broker & Market Data"]
-# )
-# app.include_router(
-#     orders.router,
-#     prefix=f"{settings.API_V1_STR}/orders",
-#     tags=["Order Execution"]
-# )
-# app.include_router(
-#     backtests.router,
-#     prefix=f"{settings.API_V1_STR}/backtests",
-#     tags=["Backtesting"]
-# )
-# app.include_router(
-#     risk_rules.router,
-#     prefix=f"{settings.API_V1_STR}/risk-rules",
-#     tags=["Risk Management"]
-# )
-# app.include_router(
-#     api_keys.router,
-#     prefix=f"{settings.API_V1_STR}/api-keys",
-#     tags=["API Key Management"]
-# )
-# app.include_router(
-#     notifications.router,
-#     prefix=f"{settings.API_V1_STR}/notifications",
-#     tags=["Notifications"]
-# )
-# app.include_router(
-#     optimizer.router,
-#     prefix=f"{settings.API_V1_STR}",
-#     tags=["Strategy Optimizer"]
-# )
-# app.include_router(
-#     live_trading.router,
-#     prefix=f"{settings.API_V1_STR}",
-#     tags=["Live Trading Automation"]
-# )
+app.include_router(
+    trades.router,
+    prefix=f"{settings.API_V1_STR}/trades",
+    tags=["Trades & Positions"]
+)
+app.include_router(
+    broker.router,
+    prefix=f"{settings.API_V1_STR}/broker",
+    tags=["Broker & Market Data"]
+)
+app.include_router(
+    orders.router,
+    prefix=f"{settings.API_V1_STR}/orders",
+    tags=["Order Execution"]
+)
+app.include_router(
+    backtests.router,
+    prefix=f"{settings.API_V1_STR}/backtests",
+    tags=["Backtesting"]
+)
+app.include_router(
+    risk_rules.router,
+    prefix=f"{settings.API_V1_STR}/risk-rules",
+    tags=["Risk Management"]
+)
+app.include_router(
+    api_keys.router,
+    prefix=f"{settings.API_V1_STR}/api-keys",
+    tags=["API Key Management"]
+)
+app.include_router(
+    notifications.router,
+    prefix=f"{settings.API_V1_STR}/notifications",
+    tags=["Notifications"]
+)
+app.include_router(
+    optimizer.router,
+    prefix=f"{settings.API_V1_STR}/optimizer",
+    tags=["Strategy Optimizer"]
+)
+app.include_router(
+    live_trading.router,
+    prefix=f"{settings.API_V1_STR}/live-trading",
+    tags=["Live Trading Automation"]
+)
+app.include_router(
+    portfolio.router,
+    prefix=f"{settings.API_V1_STR}/portfolio",
+    tags=["Portfolio Analytics"]
+)
+app.include_router(
+    watchlist.router,
+    prefix=f"{settings.API_V1_STR}/watchlist",
+    tags=["Watchlist & Alerts"]
+)
 
 
 if __name__ == "__main__":

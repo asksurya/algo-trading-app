@@ -211,11 +211,11 @@ class StrategyScheduler:
             result = await executor.execute_strategy(strategy_id)
             
             # Update execution state
-            execution.last_evaluated_at = datetime.utcnow()
+            execution.last_evaluated_at = datetime.now(datetime.UTC)
             execution.evaluation_count += 1
             
             if result.get("signal"):
-                execution.last_signal_at = datetime.utcnow()
+                execution.last_signal_at = datetime.now(datetime.UTC)
                 
             if result.get("order_id"):
                 execution.trades_today += 1

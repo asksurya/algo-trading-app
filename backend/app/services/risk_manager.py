@@ -83,7 +83,7 @@ class RiskManager:
                 
                 # Update breach count
                 rule.breach_count += 1
-                rule.last_breach_at = datetime.utcnow()
+                rule.last_breach_at = datetime.now(datetime.UTC)
                 self.db.commit()
         
         return breaches
@@ -146,7 +146,7 @@ class RiskManager:
                 current_value=order_value,
                 action=rule.action,
                 message=f"Position size ${order_value:,.2f} exceeds maximum ${max_value:,.2f}",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(datetime.UTC)
             )
         
         return None
@@ -158,7 +158,7 @@ class RiskManager:
     ) -> Optional[RiskRuleBreachResponse]:
         """Check if daily loss exceeds maximum."""
         # Get today's trades
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
         
         trades = self.db.query(Trade).filter(
             and_(
@@ -184,7 +184,7 @@ class RiskManager:
                 current_value=abs(daily_pnl),
                 action=rule.action,
                 message=f"Daily loss ${abs(daily_pnl):,.2f} exceeds maximum ${max_loss:,.2f}",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(datetime.UTC)
             )
         
         return None
@@ -212,7 +212,7 @@ class RiskManager:
                 current_value=current_drawdown,
                 action=rule.action,
                 message=f"Drawdown {current_drawdown:.2f}% exceeds maximum {rule.threshold_value:.2f}%",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(datetime.UTC)
             )
         
         return None
@@ -235,7 +235,7 @@ class RiskManager:
                 current_value=position_count,
                 action=rule.action,
                 message=f"Position count {position_count} exceeds maximum {int(rule.threshold_value)}",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(datetime.UTC)
             )
         
         return None
@@ -263,7 +263,7 @@ class RiskManager:
                 current_value=current_leverage,
                 action=rule.action,
                 message=f"Leverage {current_leverage:.2f}x exceeds maximum {rule.threshold_value:.2f}x",
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(datetime.UTC)
             )
         
         return None
@@ -343,7 +343,7 @@ class RiskManager:
         leverage = total_position_value / equity if equity > 0 else 0
         
         # Get today's P&L
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = datetime.now(datetime.UTC).replace(hour=0, minute=0, second=0, microsecond=0)
         trades = self.db.query(Trade).filter(
             and_(
                 Trade.user_id == user_id,

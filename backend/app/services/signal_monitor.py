@@ -40,7 +40,7 @@ class TradingSignal:
         self.strength = strength
         self.volume = volume
         self.indicators = indicators or {}
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now(datetime.UTC)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert signal to dictionary."""
@@ -114,9 +114,9 @@ class SignalMonitor:
                     await self._save_signal_history(live_strategy, signal)
             
             # Update strategy metrics
-            live_strategy.last_check = datetime.utcnow()
+            live_strategy.last_check = datetime.now(datetime.UTC)
             if signals:
-                live_strategy.last_signal = datetime.utcnow()
+                live_strategy.last_signal = datetime.now(datetime.UTC)
                 live_strategy.total_signals += len(signals)
             
             self.db.commit()
@@ -177,7 +177,7 @@ class SignalMonitor:
                 live_strategy.state[symbol] = {}
             live_strategy.state[symbol].update({
                 "last_price": float(current_price),
-                "last_check": datetime.utcnow().isoformat(),
+                "last_check": datetime.now(datetime.UTC).isoformat(),
                 "indicators": indicators
             })
             
@@ -205,7 +205,7 @@ class SignalMonitor:
         """Get market data for signal analysis."""
         try:
             # Try cache first
-            end_date = datetime.utcnow().date()
+            end_date = datetime.now(datetime.UTC).date()
             start_date = end_date - timedelta(days=days)
             
             df = self.market_data_cache.get_cached_data(

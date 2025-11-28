@@ -83,7 +83,7 @@ class OrderSyncService:
                     "failed_at": stmt.excluded.failed_at,
                     "replaced_at": stmt.excluded.replaced_at,
                     "replaced_by": stmt.excluded.replaced_by,
-                    "updated_at": datetime.utcnow(),
+                    "updated_at": datetime.now(datetime.UTC),
                 }
             )
             

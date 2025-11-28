@@ -33,6 +33,7 @@ numpy = "^2.0.0"
 pandas-ta = "^0.3.14b"
 apscheduler = "^3.10.4"
 aiosqlite = "^0.21.0"
+slowapi = "^0.1.9"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"

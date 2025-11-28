@@ -2,7 +2,7 @@
 Authentication API routes.
 Handles user registration, login, token refresh, and logout.
 """
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -16,6 +16,7 @@ from app.core.security import (
     decode_token,
     validate_token_type,
 )
+from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, UserLogin, Token
 from app.dependencies import get_current_user
@@ -60,53 +61,64 @@ async def register(
     
     db.add(new_user)
     await db.commit()
+    await db.refresh(new_user)
     
     return new_user
 
 
 @router.post("/login", response_model=Token)
 async def login(
-    credentials: UserLogin,
+    user_credentials: UserLogin,
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Login with email and password.
-    
-    Returns access token and refresh token.
+    Login user and return JWT token.
     """
-    # Get user by email
+    # Find user
     result = await db.execute(
-        select(User).where(User.email == credentials.email)
+        select(User).where(User.email == user_credentials.email)
     )
     user = result.scalar_one_or_none()
     
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Invalid credentials"
         )
     
     # Verify password
-    if not verify_password(credentials.password, user.hashed_password):
+    if not verify_password(user_credentials.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="Invalid credentials"
         )
     
-    # Check if user is active
+    # Check if active
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Inactive user"
+            detail="User account is inactive"
         )
     
     # Update last login
-    user.last_login = datetime.utcnow()
+    # Use timezone-aware UTC
+    user.last_login = datetime.now(timezone.utc)
+    user_id = user.id
     await db.commit()
     
-    # Create tokens
-    access_token = create_access_token(data={"sub": user.id})
-    refresh_token = create_refresh_token(data={"sub": user.id})
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": str(user_id), "type": "access"},
+        expires_delta=access_token_expires
+    )
+    
+    # Create refresh token
+    refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    refresh_token = create_access_token(
+        data={"sub": str(user_id), "type": "refresh"},
+        expires_delta=refresh_token_expires
+    )
     
     return Token(
         access_token=access_token,

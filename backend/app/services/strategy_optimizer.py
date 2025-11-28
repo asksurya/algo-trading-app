@@ -161,7 +161,7 @@ class StrategyOptimizer:
                 symbol=symbol,
                 best_strategy=performances[0] if performances else None,
                 all_performances=performances,
-                analysis_date=datetime.utcnow()
+                analysis_date=datetime.now(datetime.UTC)
             )
         
         logger.info(

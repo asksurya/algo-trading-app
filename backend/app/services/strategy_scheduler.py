@@ -99,7 +99,7 @@ class StrategyScheduler:
         if not live_strategy.last_check:
             return True
         
-        elapsed = (datetime.utcnow() - live_strategy.last_check).total_seconds()
+        elapsed = (datetime.now(datetime.UTC) - live_strategy.last_check).total_seconds()
         return elapsed >= live_strategy.check_interval
     
     async def _check_and_execute_strategy(self, live_strategy: LiveStrategy):
@@ -229,7 +229,7 @@ class StrategyScheduler:
                     if signal_history:
                         signal_history.executed = True
                         signal_history.order_id = order.id
-                        signal_history.execution_time = datetime.utcnow()
+                        signal_history.execution_time = datetime.now(datetime.UTC)
                         signal_history.execution_price = order.filled_avg_price or signal.price
                     
                     # Update strategy metrics
@@ -352,7 +352,7 @@ class StrategyScheduler:
                 return False
             
             live_strategy.status = LiveStrategyStatus.ACTIVE
-            live_strategy.started_at = datetime.utcnow()
+            live_strategy.started_at = datetime.now(datetime.UTC)
             live_strategy.stopped_at = None
             live_strategy.error_message = None
             
@@ -386,7 +386,7 @@ class StrategyScheduler:
                 return False
             
             live_strategy.status = LiveStrategyStatus.STOPPED
-            live_strategy.stopped_at = datetime.utcnow()
+            live_strategy.stopped_at = datetime.now(datetime.UTC)
             
             self.db.commit()
             

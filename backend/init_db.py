@@ -3,7 +3,7 @@ Initialize database tables.
 Run this once before starting the application.
 """
 import asyncio
-from app.database import Base, engine
+from app.database import Base, get_engine
 from app.models import user, strategy, trade  # Import all models
 
 
@@ -11,6 +11,7 @@ async def init_db():
     """Create all database tables."""
     print("Creating database tables...")
     
+    engine = get_engine()
     async with engine.begin() as conn:
         # Drop all tables (optional - comment out in production)
         # await conn.run_sync(Base.metadata.drop_all)

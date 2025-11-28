@@ -5,20 +5,13 @@ FROM python:3.12-slim as builder
 
 WORKDIR /app
 
-# Set Poetry environment variables
-ENV POETRY_NO_INTERACTION=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1 \
-    POETRY_CACHE_DIR=/tmp/poetry_cache
+# Copy requirements file
+COPY requirements.txt ./
 
-# Install Poetry
-RUN pip install poetry
-
-# Copy dependency definition files
-COPY pyproject.toml poetry.lock ./
-
-# Install dependencies (without dev dependencies)
-RUN poetry install --no-dev
+# Install dependencies to a virtual environment
+RUN python -m venv /app/.venv && \
+    /app/.venv/bin/pip install --upgrade pip && \
+    /app/.venv/bin/pip install -r requirements.txt
 
 # --- Runner Stage ---
 FROM python:3.12-slim
@@ -27,7 +20,6 @@ WORKDIR /app
 
 # Set non-root user
 RUN useradd --create-home --shell /bin/bash appuser
-USER appuser
 
 # Copy virtual environment from builder stage
 COPY --from=builder /app/.venv ./.venv
@@ -41,8 +33,17 @@ COPY gunicorn_conf.py .
 COPY alembic.ini .
 COPY migrations ./migrations
 
+# Change ownership
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
 # Expose port
 EXPOSE 8000
 
-# Run with Gunicorn
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-c", "gunicorn_conf.py", "app.main:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+
+# Run with uvicorn using full path from virtual environment
+CMD ["/app/.venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -33,10 +33,10 @@ export default function RegisterPage() {
     } catch (error: any) {
       // Parse validation errors from API
       let errorMessage = "Failed to register";
-      
+
       if (error.response?.data?.detail) {
         const detail = error.response.data.detail;
-        
+
         // Handle array of validation errors
         if (Array.isArray(detail)) {
           errorMessage = detail
@@ -91,6 +91,7 @@ export default function RegisterPage() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              data-testid="email-input"
               type="email"
               placeholder="you@example.com"
               value={email}
@@ -102,6 +103,7 @@ export default function RegisterPage() {
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
+              data-testid="password-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -114,7 +116,7 @@ export default function RegisterPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" data-testid="register-button" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating account..." : "Create Account"}
           </Button>
           <p className="text-sm text-muted-foreground text-center">

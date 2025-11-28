@@ -226,7 +226,7 @@ class AlpacaMarketData(MarketDataProvider):
             
             # Set defaults for start/end if not provided
             if end is None:
-                end = datetime.utcnow()
+                end = datetime.now(datetime.UTC)
             if start is None:
                 start = end - timedelta(days=30)  # Default to 30 days
             

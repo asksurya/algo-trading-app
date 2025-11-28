@@ -1,0 +1,1532 @@
+<testsuites id="" name="" tests="35" failures="35" skipped="0" errors="0" time="256.634795">
+<testsuite name="auth.spec.ts" timestamp="2025-11-27T18:02:49.980Z" hostname="chromium" tests="7" failures="7" skipped="0" time="378.917" errors="0">
+<testcase name="Authentication E2E Tests › should load login page" classname="auth.spec.ts" time="61.391">
+<failure message="auth.spec.ts:16:7 should load login page" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:16:7 › Authentication E2E Tests › should load login page ───────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="login-form"]') to be visible
+
+
+      16 |   test('should load login page', async ({ page }) => {
+      17 |     await page.goto('/login');
+    > 18 |     await page.waitForSelector(selectors.loginForm);
+         |                ^
+      19 |     await TestAssertions.assertLoggedOut(page);
+      20 |   });
+      21 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:18:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should load register page" classname="auth.spec.ts" time="61.377">
+<failure message="auth.spec.ts:22:7 should load register page" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:22:7 › Authentication E2E Tests › should load register page ────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="register-form"]') to be visible
+
+
+      22 |   test('should load register page', async ({ page }) => {
+      23 |     await page.goto('/register');
+    > 24 |     await page.waitForSelector(selectors.registerForm);
+         |                ^
+      25 |   });
+      26 |
+      27 |   test('should allow user registration and login', async ({ page }) => {
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:24:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow user registration and login" classname="auth.spec.ts" time="61.362">
+<failure message="auth.spec.ts:27:7 should allow user registration and login" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:27:7 › Authentication E2E Tests › should allow user registration and login 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:33:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should handle invalid login credentials" classname="auth.spec.ts" time="61.381">
+<failure message="auth.spec.ts:50:7 should handle invalid login credentials" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:50:7 › Authentication E2E Tests › should handle invalid login credentials 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+      52 |
+      53 |     // Try to login with invalid credentials
+    > 54 |     await page.fill(selectors.emailInput, 'invalid@example.com');
+         |                ^
+      55 |     await page.fill(selectors.passwordInput, 'wrongpassword');
+      56 |     await page.click(selectors.loginButton);
+      57 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:54:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should prevent access to protected routes when not logged in" classname="auth.spec.ts" time="10.666">
+<failure message="auth.spec.ts:63:7 should prevent access to protected routes when not logged in" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:63:7 › Authentication E2E Tests › should prevent access to protected routes when not logged in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="login-form"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="login-form"]')
+
+
+       at test-utils.ts:188
+
+      186 |   async assertLoggedOut(page: Page) {
+      187 |     await expect(page).toHaveURL(/.*\/login/);
+    > 188 |     await expect(page.locator(selectors.loginForm)).toBeVisible();
+          |                                                     ^
+      189 |   },
+      190 |
+      191 |   async assertStrategyCreated(page: Page, strategyName: string) {
+        at Object.assertLoggedOut (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:188:53)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:68:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow navigation between pages when authenticated" classname="auth.spec.ts" time="61.368">
+<failure message="auth.spec.ts:71:7 should allow navigation between pages when authenticated" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:71:7 › Authentication E2E Tests › should allow navigation between pages when authenticated 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should maintain login state across page refreshes" classname="auth.spec.ts" time="61.372">
+<failure message="auth.spec.ts:89:7 should maintain login state across page refreshes" type="FAILURE">
+<![CDATA[  [chromium] › auth.spec.ts:89:7 › Authentication E2E Tests › should maintain login state across page refreshes 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2025-11-27T18:02:49.980Z" hostname="firefox" tests="7" failures="7" skipped="0" time="370.999" errors="0">
+<testcase name="Authentication E2E Tests › should load login page" classname="auth.spec.ts" time="60.049">
+<failure message="auth.spec.ts:16:7 should load login page" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:16:7 › Authentication E2E Tests › should load login page ────────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="login-form"]') to be visible
+
+
+      16 |   test('should load login page', async ({ page }) => {
+      17 |     await page.goto('/login');
+    > 18 |     await page.waitForSelector(selectors.loginForm);
+         |                ^
+      19 |     await TestAssertions.assertLoggedOut(page);
+      20 |   });
+      21 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:18:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should load register page" classname="auth.spec.ts" time="60.045">
+<failure message="auth.spec.ts:22:7 should load register page" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:22:7 › Authentication E2E Tests › should load register page ─────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="register-form"]') to be visible
+
+
+      22 |   test('should load register page', async ({ page }) => {
+      23 |     await page.goto('/register');
+    > 24 |     await page.waitForSelector(selectors.registerForm);
+         |                ^
+      25 |   });
+      26 |
+      27 |   test('should allow user registration and login', async ({ page }) => {
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:24:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow user registration and login" classname="auth.spec.ts" time="60.06">
+<failure message="auth.spec.ts:27:7 should allow user registration and login" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:27:7 › Authentication E2E Tests › should allow user registration and login 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:33:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should handle invalid login credentials" classname="auth.spec.ts" time="60.05">
+<failure message="auth.spec.ts:50:7 should handle invalid login credentials" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:50:7 › Authentication E2E Tests › should handle invalid login credentials 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+      52 |
+      53 |     // Try to login with invalid credentials
+    > 54 |     await page.fill(selectors.emailInput, 'invalid@example.com');
+         |                ^
+      55 |     await page.fill(selectors.passwordInput, 'wrongpassword');
+      56 |     await page.click(selectors.loginButton);
+      57 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:54:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should prevent access to protected routes when not logged in" classname="auth.spec.ts" time="10.671">
+<failure message="auth.spec.ts:63:7 should prevent access to protected routes when not logged in" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:63:7 › Authentication E2E Tests › should prevent access to protected routes when not logged in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="login-form"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="login-form"]')
+
+
+       at test-utils.ts:188
+
+      186 |   async assertLoggedOut(page: Page) {
+      187 |     await expect(page).toHaveURL(/.*\/login/);
+    > 188 |     await expect(page.locator(selectors.loginForm)).toBeVisible();
+          |                                                     ^
+      189 |   },
+      190 |
+      191 |   async assertStrategyCreated(page: Page, strategyName: string) {
+        at Object.assertLoggedOut (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:188:53)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:68:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow navigation between pages when authenticated" classname="auth.spec.ts" time="60.077">
+<failure message="auth.spec.ts:71:7 should allow navigation between pages when authenticated" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:71:7 › Authentication E2E Tests › should allow navigation between pages when authenticated 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should maintain login state across page refreshes" classname="auth.spec.ts" time="60.047">
+<failure message="auth.spec.ts:89:7 should maintain login state across page refreshes" type="FAILURE">
+<![CDATA[  [firefox] › auth.spec.ts:89:7 › Authentication E2E Tests › should maintain login state across page refreshes 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-firefox/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2025-11-27T18:02:49.980Z" hostname="webkit" tests="7" failures="7" skipped="0" time="370.899" errors="0">
+<testcase name="Authentication E2E Tests › should load login page" classname="auth.spec.ts" time="60.068">
+<failure message="auth.spec.ts:16:7 should load login page" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:16:7 › Authentication E2E Tests › should load login page ─────────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="login-form"]') to be visible
+
+
+      16 |   test('should load login page', async ({ page }) => {
+      17 |     await page.goto('/login');
+    > 18 |     await page.waitForSelector(selectors.loginForm);
+         |                ^
+      19 |     await TestAssertions.assertLoggedOut(page);
+      20 |   });
+      21 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:18:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should load register page" classname="auth.spec.ts" time="60.069">
+<failure message="auth.spec.ts:22:7 should load register page" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:22:7 › Authentication E2E Tests › should load register page ──────────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="register-form"]') to be visible
+
+
+      22 |   test('should load register page', async ({ page }) => {
+      23 |     await page.goto('/register');
+    > 24 |     await page.waitForSelector(selectors.registerForm);
+         |                ^
+      25 |   });
+      26 |
+      27 |   test('should allow user registration and login', async ({ page }) => {
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:24:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow user registration and login" classname="auth.spec.ts" time="60.059">
+<failure message="auth.spec.ts:27:7 should allow user registration and login" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:27:7 › Authentication E2E Tests › should allow user registration and login 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:33:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should handle invalid login credentials" classname="auth.spec.ts" time="60.058">
+<failure message="auth.spec.ts:50:7 should handle invalid login credentials" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:50:7 › Authentication E2E Tests › should handle invalid login credentials 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+      52 |
+      53 |     // Try to login with invalid credentials
+    > 54 |     await page.fill(selectors.emailInput, 'invalid@example.com');
+         |                ^
+      55 |     await page.fill(selectors.passwordInput, 'wrongpassword');
+      56 |     await page.click(selectors.loginButton);
+      57 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:54:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should prevent access to protected routes when not logged in" classname="auth.spec.ts" time="10.48">
+<failure message="auth.spec.ts:63:7 should prevent access to protected routes when not logged in" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:63:7 › Authentication E2E Tests › should prevent access to protected routes when not logged in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="login-form"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="login-form"]')
+
+
+       at test-utils.ts:188
+
+      186 |   async assertLoggedOut(page: Page) {
+      187 |     await expect(page).toHaveURL(/.*\/login/);
+    > 188 |     await expect(page.locator(selectors.loginForm)).toBeVisible();
+          |                                                     ^
+      189 |   },
+      190 |
+      191 |   async assertStrategyCreated(page: Page, strategyName: string) {
+        at Object.assertLoggedOut (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:188:53)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:68:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow navigation between pages when authenticated" classname="auth.spec.ts" time="60.082">
+<failure message="auth.spec.ts:71:7 should allow navigation between pages when authenticated" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:71:7 › Authentication E2E Tests › should allow navigation between pages when authenticated 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should maintain login state across page refreshes" classname="auth.spec.ts" time="60.083">
+<failure message="auth.spec.ts:89:7 should maintain login state across page refreshes" type="FAILURE">
+<![CDATA[  [webkit] › auth.spec.ts:89:7 › Authentication E2E Tests › should maintain login state across page refreshes 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-webkit/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2025-11-27T18:02:49.980Z" hostname="Mobile Chrome" tests="7" failures="7" skipped="0" time="376.297" errors="0">
+<testcase name="Authentication E2E Tests › should load login page" classname="auth.spec.ts" time="61">
+<failure message="auth.spec.ts:16:7 should load login page" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:16:7 › Authentication E2E Tests › should load login page ──────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="login-form"]') to be visible
+
+
+      16 |   test('should load login page', async ({ page }) => {
+      17 |     await page.goto('/login');
+    > 18 |     await page.waitForSelector(selectors.loginForm);
+         |                ^
+      19 |     await TestAssertions.assertLoggedOut(page);
+      20 |   });
+      21 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:18:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should load register page" classname="auth.spec.ts" time="61.014">
+<failure message="auth.spec.ts:22:7 should load register page" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:22:7 › Authentication E2E Tests › should load register page ───────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="register-form"]') to be visible
+
+
+      22 |   test('should load register page', async ({ page }) => {
+      23 |     await page.goto('/register');
+    > 24 |     await page.waitForSelector(selectors.registerForm);
+         |                ^
+      25 |   });
+      26 |
+      27 |   test('should allow user registration and login', async ({ page }) => {
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:24:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow user registration and login" classname="auth.spec.ts" time="60.979">
+<failure message="auth.spec.ts:27:7 should allow user registration and login" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:27:7 › Authentication E2E Tests › should allow user registration and login 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:33:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should handle invalid login credentials" classname="auth.spec.ts" time="60.975">
+<failure message="auth.spec.ts:50:7 should handle invalid login credentials" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:50:7 › Authentication E2E Tests › should handle invalid login credentials 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+      52 |
+      53 |     // Try to login with invalid credentials
+    > 54 |     await page.fill(selectors.emailInput, 'invalid@example.com');
+         |                ^
+      55 |     await page.fill(selectors.passwordInput, 'wrongpassword');
+      56 |     await page.click(selectors.loginButton);
+      57 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:54:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should prevent access to protected routes when not logged in" classname="auth.spec.ts" time="10.385">
+<failure message="auth.spec.ts:63:7 should prevent access to protected routes when not logged in" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:63:7 › Authentication E2E Tests › should prevent access to protected routes when not logged in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="login-form"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="login-form"]')
+
+
+       at test-utils.ts:188
+
+      186 |   async assertLoggedOut(page: Page) {
+      187 |     await expect(page).toHaveURL(/.*\/login/);
+    > 188 |     await expect(page.locator(selectors.loginForm)).toBeVisible();
+          |                                                     ^
+      189 |   },
+      190 |
+      191 |   async assertStrategyCreated(page: Page, strategyName: string) {
+        at Object.assertLoggedOut (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:188:53)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:68:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow navigation between pages when authenticated" classname="auth.spec.ts" time="60.969">
+<failure message="auth.spec.ts:71:7 should allow navigation between pages when authenticated" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:71:7 › Authentication E2E Tests › should allow navigation between pages when authenticated 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should maintain login state across page refreshes" classname="auth.spec.ts" time="60.975">
+<failure message="auth.spec.ts:89:7 should maintain login state across page refreshes" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › auth.spec.ts:89:7 › Authentication E2E Tests › should maintain login state across page refreshes 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Chrome/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth.spec.ts" timestamp="2025-11-27T18:02:49.980Z" hostname="Mobile Safari" tests="7" failures="7" skipped="0" time="370.825" errors="0">
+<testcase name="Authentication E2E Tests › should load login page" classname="auth.spec.ts" time="60.08">
+<failure message="auth.spec.ts:16:7 should load login page" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:16:7 › Authentication E2E Tests › should load login page ──────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="login-form"]') to be visible
+
+
+      16 |   test('should load login page', async ({ page }) => {
+      17 |     await page.goto('/login');
+    > 18 |     await page.waitForSelector(selectors.loginForm);
+         |                ^
+      19 |     await TestAssertions.assertLoggedOut(page);
+      20 |   });
+      21 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:18:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-login-page-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should load register page" classname="auth.spec.ts" time="60.073">
+<failure message="auth.spec.ts:22:7 should load register page" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:22:7 › Authentication E2E Tests › should load register page ───────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="register-form"]') to be visible
+
+
+      22 |   test('should load register page', async ({ page }) => {
+      23 |     await page.goto('/register');
+    > 24 |     await page.waitForSelector(selectors.registerForm);
+         |                ^
+      25 |   });
+      26 |
+      27 |   test('should allow user registration and login', async ({ page }) => {
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:24:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Tests-should-load-register-page-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow user registration and login" classname="auth.spec.ts" time="60.078">
+<failure message="auth.spec.ts:27:7 should allow user registration and login" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:27:7 › Authentication E2E Tests › should allow user registration and login 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:33:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-0b94a-user-registration-and-login-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should handle invalid login credentials" classname="auth.spec.ts" time="60.069">
+<failure message="auth.spec.ts:50:7 should handle invalid login credentials" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:50:7 › Authentication E2E Tests › should handle invalid login credentials 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+      52 |
+      53 |     // Try to login with invalid credentials
+    > 54 |     await page.fill(selectors.emailInput, 'invalid@example.com');
+         |                ^
+      55 |     await page.fill(selectors.passwordInput, 'wrongpassword');
+      56 |     await page.click(selectors.loginButton);
+      57 |
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:54:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-17ba4-e-invalid-login-credentials-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should prevent access to protected routes when not logged in" classname="auth.spec.ts" time="10.389">
+<failure message="auth.spec.ts:63:7 should prevent access to protected routes when not logged in" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:63:7 › Authentication E2E Tests › should prevent access to protected routes when not logged in 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="login-form"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('[data-testid="login-form"]')
+
+
+       at test-utils.ts:188
+
+      186 |   async assertLoggedOut(page: Page) {
+      187 |     await expect(page).toHaveURL(/.*\/login/);
+    > 188 |     await expect(page.locator(selectors.loginForm)).toBeVisible();
+          |                                                     ^
+      189 |   },
+      190 |
+      191 |   async assertStrategyCreated(page: Page, strategyName: string) {
+        at Object.assertLoggedOut (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:188:53)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:68:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-1d5e1-d-routes-when-not-logged-in-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should allow navigation between pages when authenticated" classname="auth.spec.ts" time="60.064">
+<failure message="auth.spec.ts:71:7 should allow navigation between pages when authenticated" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:71:7 › Authentication E2E Tests › should allow navigation between pages when authenticated 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:76:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-e0793-en-pages-when-authenticated-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication E2E Tests › should maintain login state across page refreshes" classname="auth.spec.ts" time="60.072">
+<failure message="auth.spec.ts:89:7 should maintain login state across page refreshes" type="FAILURE">
+<![CDATA[  [Mobile Safari] › auth.spec.ts:89:7 › Authentication E2E Tests › should maintain login state across page refreshes 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: page.fill: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('[data-testid="email-input"]')
+
+
+       at test-utils.ts:58
+
+      56 |
+      57 |   async register(email: string, password: string) {
+    > 58 |     await this.page.fill(selectors.emailInput, email);
+         |                     ^
+      59 |     await this.page.fill(selectors.passwordInput, password);
+      60 |     await this.page.click(selectors.registerButton);
+      61 |     await this.page.waitForURL('**/dashboard');
+        at AuthHelper.register (/Users/ashwin/Desktop/algo-trading-app/frontend/e2e/test-utils.ts:58:21)
+        at /Users/ashwin/Desktop/algo-trading-app/frontend/e2e/auth.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/test-failed-1.png]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/video.webm]]
+
+[[ATTACHMENT|test-results/auth-Authentication-E2E-Te-868fa-state-across-page-refreshes-Mobile-Safari/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

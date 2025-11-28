@@ -21,7 +21,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       if (token) {
         // Validate token and fetch user data
-        await checkAuth();
+        try {
+          await checkAuth();
+        } catch (error) {
+          console.error("Auth check failed:", error);
+        }
       }
       setIsInitialized(true);
     };
@@ -47,8 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isInitialized, isAuthenticated, pathname, router]);
 
-  // Show nothing while initializing to prevent flash of wrong content
-  if (!isInitialized) {
+  // Only show loading for protected routes while initializing
+  const isDashboardRoute = pathname?.startsWith("/dashboard");
+
+  if (!isInitialized && isDashboardRoute) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse">Loading...</div>

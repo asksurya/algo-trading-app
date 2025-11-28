@@ -288,7 +288,7 @@ async def revoke_api_key(
     
     # Soft delete by marking as revoked
     api_key.status = ApiKeyStatus.REVOKED
-    api_key.revoked_at = datetime.utcnow()
+    api_key.revoked_at = datetime.now(datetime.UTC)
     
     # Create audit log
     audit_log = _create_audit_log(
@@ -340,7 +340,7 @@ async def rotate_api_key(
         # Update credentials
         api_key.encrypted_api_key = encrypted_key
         api_key.encrypted_api_secret = encrypted_secret
-        api_key.last_rotated_at = datetime.utcnow()
+        api_key.last_rotated_at = datetime.now(datetime.UTC)
         api_key.encryption_version += 1
         
         # Create audit log
@@ -437,7 +437,7 @@ async def verify_api_key(
         is_valid = bool(plaintext_key and plaintext_secret)
         
         # Update last verified
-        api_key.last_verified_at = datetime.utcnow()
+        api_key.last_verified_at = datetime.now(datetime.UTC)
         
         if is_valid:
             api_key.status = ApiKeyStatus.ACTIVE
@@ -483,7 +483,7 @@ async def verify_api_key(
         
         return ApiKeyVerifyResponse(
             is_valid=False,
-            verified_at=datetime.utcnow(),
+            verified_at=datetime.now(datetime.UTC),
             message=f"Verification error: {str(e)}"
         )
 

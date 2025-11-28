@@ -121,7 +121,7 @@ async def run_optimization_job(
         # Update job with results
         _optimization_jobs[job_id]["status"] = "completed"
         _optimization_jobs[job_id]["results"] = result_schemas
-        _optimization_jobs[job_id]["completed_at"] = datetime.utcnow()
+        _optimization_jobs[job_id]["completed_at"] = datetime.now(datetime.UTC)
         _optimization_jobs[job_id]["progress"] = 100.0
         _optimization_jobs[job_id]["results_available"] = True
         _optimization_jobs[job_id]["current_step"] = "Complete"
@@ -139,7 +139,7 @@ async def run_optimization_job(
     except Exception as e:
         _optimization_jobs[job_id]["status"] = "failed"
         _optimization_jobs[job_id]["error_message"] = str(e)
-        _optimization_jobs[job_id]["completed_at"] = datetime.utcnow()
+        _optimization_jobs[job_id]["completed_at"] = datetime.now(datetime.UTC)
         
         # Send error notification
         notification_service = NotificationService(db)
@@ -195,7 +195,7 @@ async def analyze_strategies(
         "status": "pending",
         "progress": 0.0,
         "current_step": "Pending",
-        "started_at": datetime.utcnow(),
+        "started_at": datetime.now(datetime.UTC),
         "completed_at": None,
         "error_message": None,
         "results_available": False,
@@ -221,7 +221,7 @@ async def analyze_strategies(
         total_symbols=len(request.symbols),
         total_strategies=len(request.strategy_ids) if request.strategy_ids else 0,
         total_backtests=total_backtests,
-        started_at=datetime.utcnow()
+        started_at=datetime.now(datetime.UTC)
     )
 
 
@@ -363,7 +363,7 @@ async def execute_optimal_strategies(
     
     return ExecuteOptimalResponse(
         job_id=str(uuid4()),
-        executed_at=datetime.utcnow(),
+        executed_at=datetime.now(datetime.UTC),
         successful=execution_results["successful"],
         failed=execution_results["failed"],
         blocked=execution_results["blocked"],

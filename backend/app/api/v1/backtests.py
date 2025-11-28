@@ -243,7 +243,7 @@ async def get_backtest_status(
     if backtest.started_at and not backtest.completed_at:
         from datetime import datetime
         status_data["elapsed_seconds"] = (
-            datetime.utcnow() - backtest.started_at
+            datetime.now(datetime.UTC) - backtest.started_at
         ).total_seconds()
     
     return BacktestStatusResponse(data=status_data)

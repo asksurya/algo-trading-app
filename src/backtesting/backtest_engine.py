@@ -77,7 +77,7 @@ class BacktestEngine:
             self.end_date
         )
         
-        if data.empty:
+        if data is None or data.empty:
             self.logger.error("No data available for backtesting")
             return {}
         

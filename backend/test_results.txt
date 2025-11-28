@@ -1,0 +1,794 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.1, pytest-9.0.1, pluggy-1.6.0 -- /Users/ashwin/.pyenv/versions/3.12.1/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/ashwin/Desktop/algo-trading-app/backend
+configfile: pytest.ini
+plugins: anyio-4.11.0, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 49 items
+
+tests/test_alpaca_integration.py::TestRateLimiter::test_rate_limiter_allows_requests_within_limit PASSED [  2%]
+tests/test_alpaca_integration.py::TestRateLimiter::test_rate_limiter_wait_time PASSED [  4%]
+tests/test_alpaca_integration.py::TestCacheManager::test_cache_set_and_get PASSED [  6%]
+tests/test_alpaca_integration.py::TestCacheManager::test_cache_handles_missing_key PASSED [  8%]
+tests/test_alpaca_integration.py::TestCacheManager::test_cache_handles_redis_error PASSED [ 10%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_get_account_success PASSED [ 12%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_get_account_uses_cache PASSED [ 14%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_get_positions_success PASSED [ 16%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_get_orders_with_filter PASSED [ 18%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_alpaca_api_error_handling PASSED [ 20%]
+tests/test_alpaca_integration.py::TestAlpacaClient::test_rate_limit_exceeded PASSED [ 22%]
+tests/test_alpaca_integration.py::TestBrokerEndpoints::test_get_account_endpoint_requires_auth PASSED [ 24%]
+tests/test_alpaca_integration.py::TestBrokerEndpoints::test_get_positions_endpoint_requires_auth PASSED [ 26%]
+tests/test_alpaca_integration.py::TestBrokerEndpoints::test_get_orders_endpoint_requires_auth PASSED [ 28%]
+tests/test_alpaca_integration.py::TestBrokerEndpoints::test_get_orders_invalid_status_filter PASSED [ 30%]
+tests/test_alpaca_integration.py::TestWebSocketStreaming::test_websocket_connection PASSED [ 32%]
+tests/test_alpaca_integration.py::TestWebSocketStreaming::test_websocket_subscription PASSED [ 34%]
+tests/test_alpaca_integration.py::TestWebSocketStreaming::test_websocket_disconnection PASSED [ 36%]
+tests/test_alpaca_integration.py::TestAlpacaIntegration::test_real_account_fetch SKIPPED [ 38%]
+tests/test_alpaca_integration.py::TestAlpacaIntegration::test_real_positions_fetch SKIPPED [ 40%]
+tests/test_alpaca_integration.py::TestAlpacaIntegration::test_real_orders_fetch SKIPPED [ 42%]
+tests/test_auth.py::test_register_user FAILED                            [ 44%]
+tests/test_auth.py::test_register_duplicate_email FAILED                 [ 46%]
+tests/test_auth.py::test_login_success FAILED                            [ 48%]
+tests/test_auth.py::test_login_wrong_password FAILED                     [ 51%]
+tests/test_auth.py::test_login_nonexistent_user FAILED                   [ 53%]
+tests/test_auth.py::test_get_current_user ERROR                          [ 55%]
+tests/test_auth.py::test_get_current_user_unauthorized FAILED            [ 57%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_create_live_strategy ERROR [ 59%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_list_live_strategies ERROR [ 61%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_live_strategy ERROR [ 63%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_update_live_strategy ERROR [ 65%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_delete_live_strategy ERROR [ 67%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_start_stop_pause_strategy ERROR [ 69%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_dashboard ERROR [ 71%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_recent_signals ERROR [ 73%]
+tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_positions ERROR [ 75%]
+tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_unauthenticated_request FAILED [ 77%]
+tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_invalid_token FAILED [ 79%]
+tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_user_isolation ERROR [ 81%]
+tests/test_phase9_e2e.py::TestInputValidation::test_invalid_check_interval ERROR [ 83%]
+tests/test_phase9_e2e.py::TestInputValidation::test_invalid_max_positions ERROR [ 85%]
+tests/test_phase9_e2e.py::TestInputValidation::test_empty_symbols ERROR  [ 87%]
+tests/test_phase9_e2e.py::TestErrorHandling::test_nonexistent_strategy ERROR [ 89%]
+tests/test_phase9_e2e.py::TestErrorHandling::test_nonexistent_base_strategy ERROR [ 91%]
+tests/test_phase9_e2e.py::TestErrorHandling::test_update_active_strategy ERROR [ 93%]
+tests/test_phase9_e2e.py::TestDataIntegrity::test_strategy_persists ERROR [ 95%]
+tests/test_phase9_e2e.py::TestDataIntegrity::test_strategy_defaults ERROR [ 97%]
+tests/test_trading_scenarios.py::TestTradingScenarios::test_create_and_start_strategy FAILED [100%]
+
+==================================== ERRORS ====================================
+___________________ ERROR at setup of test_get_current_user ____________________
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py", line 79, in collapse_excgroups
+  |     yield
+  |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 192, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 781, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/runner.py", line 353, in from_call
+    |     result: TResult | None = func()
+    |                              ^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/runner.py", line 245, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds),
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/logging.py", line 843, in pytest_runtest_setup
+    |     yield
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/capture.py", line 895, in pytest_runtest_setup
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/runner.py", line 165, in pytest_runtest_setup
+    |     item.session._setupstate.setup(item)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/runner.py", line 523, in setup
+    |     col.setup()
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 458, in setup
+    |     return super().setup()
+    |            ^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/python.py", line 1723, in setup
+    |     self._request._fillfixtures()
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 707, in _fillfixtures
+    |     item.funcargs[argname] = self.getfixturevalue(argname)
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 539, in getfixturevalue
+    |     fixturedef = self._get_active_fixturedef(argname)
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 627, in _get_active_fixturedef
+    |     fixturedef.execute(request=subrequest)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 1110, in execute
+    |     result: FixtureValue = ihook.pytest_fixture_setup(
+    |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 743, in pytest_fixture_setup
+    |     hook_result = yield
+    |                   ^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/setuponly.py", line 36, in pytest_fixture_setup
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 1202, in pytest_fixture_setup
+    |     result = call_fixture_func(fixturefunc, request, kwargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 915, in call_fixture_func
+    |     fixture_result = fixturefunc(**kwargs)
+    |                      ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 313, in _asyncgen_fixture_wrapper
+    |     result = runner.run(setup(), context=context)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/asyncio/runners.py", line 118, in run
+    |     return self._loop.run_until_complete(task)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/asyncio/base_events.py", line 684, in run_until_complete
+    |     return future.result()
+    |            ^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 309, in setup
+    |     res = await gen_obj.__anext__()
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/Desktop/algo-trading-app/backend/tests/conftest.py", line 105, in auth_headers
+    |     response = await client.post(
+    |                ^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1859, in post
+    |     return await self.request(
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    |     return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    |     response = await self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    |     response = await self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    |     response = await self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    |     response = await transport.handle_async_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_transports/asgi.py", line 170, in handle_async_request
+    |     await self.app(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/applications.py", line 1134, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(value)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/Desktop/algo-trading-app/backend/app/main.py", line 82, in add_security_headers
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 191, in __call__
+    |     with recv_stream, send_stream, collapse_excgroups():
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(value)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 193, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/slowapi/middleware.py", line 136, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 168, in call_next
+    |     raise app_exc from app_exc.__cause__ or app_exc.__context__
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 125, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 111, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 391, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 290, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/ashwin/Desktop/algo-trading-app/backend/app/api/v1/auth.py", line 104, in login
+    |     user.last_login = datetime.now(datetime.UTC)
+    |                                    ^^^^^^^^^^^^
+    | AttributeError: type object 'datetime.datetime' has no attribute 'UTC'
+    +------------------------------------
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 458, in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/python.py", line 1723, in setup
+    self._request._fillfixtures()
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 707, in _fillfixtures
+    item.funcargs[argname] = self.getfixturevalue(argname)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 539, in getfixturevalue
+    fixturedef = self._get_active_fixturedef(argname)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 627, in _get_active_fixturedef
+    fixturedef.execute(request=subrequest)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 1110, in execute
+    result: FixtureValue = ihook.pytest_fixture_setup(
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+    raise exception
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 743, in pytest_fixture_setup
+    hook_result = yield
+                  ^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    return result.get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_result.py", line 103, in get_result
+    raise exc.with_traceback(tb)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    res = yield
+          ^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/setuponly.py", line 36, in pytest_fixture_setup
+    return (yield)
+            ^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 1202, in pytest_fixture_setup
+    result = call_fixture_func(fixturefunc, request, kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/fixtures.py", line 915, in call_fixture_func
+    fixture_result = fixturefunc(**kwargs)
+                     ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 313, in _asyncgen_fixture_wrapper
+    result = runner.run(setup(), context=context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/asyncio/base_events.py", line 684, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py", line 309, in setup
+    res = await gen_obj.__anext__()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/Desktop/algo-trading-app/backend/tests/conftest.py", line 105, in auth_headers
+    response = await client.post(
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1859, in post
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_transports/asgi.py", line 170, in handle_async_request
+    await self.app(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/applications.py", line 1134, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/Desktop/algo-trading-app/backend/app/main.py", line 82, in add_security_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/contextlib.py", line 158, in __exit__
+    self.gen.throw(value)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/slowapi/middleware.py", line 136, in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 111, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashwin/Desktop/algo-trading-app/backend/app/api/v1/auth.py", line 104, in login
+    user.last_login = datetime.now(datetime.UTC)
+                                   ^^^^^^^^^^^^
+AttributeError: type object 'datetime.datetime' has no attribute 'UTC'
+
+The above exception was the direct cause of the following exception:
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py:458: in setup
+    return super().setup()
+           ^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py:743: in pytest_fixture_setup
+    hook_result = yield
+                  ^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py:313: in _asyncgen_fixture_wrapper
+    result = runner.run(setup(), context=context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/asyncio/base_events.py:684: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/pytest_asyncio/plugin.py:309: in setup
+    res = await gen_obj.__anext__()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/conftest.py:105: in auth_headers
+    response = await client.post(
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/httpx/_transports/asgi.py:170: in handle_async_request
+    await self.app(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/applications.py:1134: in __call__
+    await super().__call__(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/applications.py:113: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:191: in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+../../../.pyenv/versions/3.12.1/lib/python3.12/contextlib.py:158: in __exit__
+    self.gen.throw(value)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py:85: in collapse_excgroups
+    raise exc
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/main.py:82: in add_security_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:191: in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+../../../.pyenv/versions/3.12.1/lib/python3.12/contextlib.py:158: in __exit__
+    self.gen.throw(value)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_utils.py:85: in collapse_excgroups
+    raise exc
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:193: in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/slowapi/middleware.py:136: in dispatch
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:168: in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/base.py:144: in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/cors.py:85: in __call__
+    await self.app(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py:716: in __call__
+    await self.middleware_stack(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py:736: in app
+    await route.handle(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/routing.py:290: in handle
+    await self.app(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py:125: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py:111: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py:391: in app
+    raw_response = await run_endpoint_function(
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/fastapi/routing.py:290: in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/api/v1/auth.py:104: in login
+    user.last_login = datetime.now(datetime.UTC)
+                                   ^^^^^^^^^^^^
+E   AttributeError: type object 'datetime.datetime' has no attribute 'UTC'
+___ ERROR at setup of TestLiveTradingAPIEndpoints.test_create_live_strategy ____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+___ ERROR at setup of TestLiveTradingAPIEndpoints.test_list_live_strategies ____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_____ ERROR at setup of TestLiveTradingAPIEndpoints.test_get_live_strategy _____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+___ ERROR at setup of TestLiveTradingAPIEndpoints.test_update_live_strategy ____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+___ ERROR at setup of TestLiveTradingAPIEndpoints.test_delete_live_strategy ____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_ ERROR at setup of TestLiveTradingAPIEndpoints.test_start_stop_pause_strategy _
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_______ ERROR at setup of TestLiveTradingAPIEndpoints.test_get_dashboard _______
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+____ ERROR at setup of TestLiveTradingAPIEndpoints.test_get_recent_signals _____
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_______ ERROR at setup of TestLiveTradingAPIEndpoints.test_get_positions _______
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+___ ERROR at setup of TestAuthenticationAndAuthorization.test_user_isolation ___
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+______ ERROR at setup of TestInputValidation.test_invalid_check_interval _______
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_______ ERROR at setup of TestInputValidation.test_invalid_max_positions _______
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+___________ ERROR at setup of TestInputValidation.test_empty_symbols ___________
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+________ ERROR at setup of TestErrorHandling.test_nonexistent_strategy _________
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+______ ERROR at setup of TestErrorHandling.test_nonexistent_base_strategy ______
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_______ ERROR at setup of TestErrorHandling.test_update_active_strategy ________
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+__________ ERROR at setup of TestDataIntegrity.test_strategy_persists __________
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+__________ ERROR at setup of TestDataIntegrity.test_strategy_defaults __________
+tests/test_phase9_e2e.py:35: in test_user_token
+    assert response.status_code == 200
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+=================================== FAILURES ===================================
+______________________________ test_register_user ______________________________
+tests/test_auth.py:15: in test_register_user
+    assert response.status_code == status.HTTP_201_CREATED
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+________________________ test_register_duplicate_email _________________________
+tests/test_auth.py:32: in test_register_duplicate_email
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+______________________________ test_login_success ______________________________
+tests/test_auth.py:45: in test_login_success
+    assert response.status_code == status.HTTP_200_OK
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+__________________________ test_login_wrong_password ___________________________
+tests/test_auth.py:62: in test_login_wrong_password
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_________________________ test_login_nonexistent_user __________________________
+tests/test_auth.py:75: in test_login_nonexistent_user
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+______________________ test_get_current_user_unauthorized ______________________
+tests/test_auth.py:92: in test_get_current_user_unauthorized
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_______ TestAuthenticationAndAuthorization.test_unauthenticated_request ________
+tests/test_phase9_e2e.py:344: in test_unauthenticated_request
+    assert response.status_code == 401
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+____________ TestAuthenticationAndAuthorization.test_invalid_token _____________
+tests/test_phase9_e2e.py:353: in test_invalid_token
+    assert response.status_code == 401
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+_____________ TestTradingScenarios.test_create_and_start_strategy ______________
+tests/test_trading_scenarios.py:22: in test_create_and_start_strategy
+    assert response.status_code == status.HTTP_200_OK
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'coroutine' object has no attribute 'status_code'
+=============================== warnings summary ===============================
+app/schemas/user.py:42
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/user.py:42: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserResponse(UserBase):
+
+app/schemas/strategy.py:39
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:39: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyResponse(StrategyBase):
+
+app/schemas/strategy.py:69
+/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/unraisableexception.py:33: RuntimeWarning: coroutine 'AsyncClient.post' was never awaited
+  gc.collect()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+/Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/_pytest/unraisableexception.py:33: RuntimeWarning: coroutine 'AsyncClient.get' was never awaited
+  gc.collect()
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:69: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyTickerResponse(StrategyTickerBase):
+
+app/schemas/strategy.py:95
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:95: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    tickers: List[str] = Field(
+
+app/schemas/trade.py:31
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/trade.py:31: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TradeResponse(TradeBase):
+
+app/schemas/trade.py:55
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/trade.py:55: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PositionResponse(PositionBase):
+
+../../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/websockets/legacy/__init__.py:6
+  /Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+app/schemas/risk_rule.py:40
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/risk_rule.py:40: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class RiskRuleResponse(RiskRuleBase):
+
+app/schemas/order.py:32
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/order.py:32: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class OrderResponse(OrderBase):
+
+app/schemas/api_key.py:39
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/api_key.py:39: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ApiKeyResponse(ApiKeyBase):
+
+app/schemas/api_key.py:81
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/api_key.py:81: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ApiKeyAuditLogResponse(BaseModel):
+
+app/schemas/notification.py:32
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/notification.py:32: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NotificationResponse(NotificationBase):
+
+app/schemas/notification.py:83
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/notification.py:83: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NotificationPreferenceResponse(NotificationPreferenceBase):
+
+app/schemas/optimizer.py:12
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:12: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    symbols: List[str] = Field(
+
+app/schemas/optimizer.py:12
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:12: PydanticDeprecatedSince20: `max_items` is deprecated and will be removed, use `max_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    symbols: List[str] = Field(
+
+app/schemas/optimizer.py:37
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:37: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyPerformanceSchema(BaseModel):
+
+app/schemas/optimizer.py:56
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:56: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class OptimizationResultSchema(BaseModel):
+
+tests/test_phase9_e2e.py: 18 warnings
+  /Users/ashwin/Desktop/algo-trading-app/backend/tests/test_phase9_e2e.py:27: RuntimeWarning: coroutine 'AsyncClient.post' was never awaited
+    response = client.post(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_auth.py::test_register_user - AttributeError: 'coroutine' o...
+FAILED tests/test_auth.py::test_register_duplicate_email - AttributeError: 'c...
+FAILED tests/test_auth.py::test_login_success - AttributeError: 'coroutine' o...
+FAILED tests/test_auth.py::test_login_wrong_password - AttributeError: 'corou...
+FAILED tests/test_auth.py::test_login_nonexistent_user - AttributeError: 'cor...
+FAILED tests/test_auth.py::test_get_current_user_unauthorized - AttributeErro...
+FAILED tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_unauthenticated_request
+FAILED tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_invalid_token
+FAILED tests/test_trading_scenarios.py::TestTradingScenarios::test_create_and_start_strategy
+ERROR tests/test_auth.py::test_get_current_user - AttributeError: type object...
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_create_live_strategy
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_list_live_strategies
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_live_strategy
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_update_live_strategy
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_delete_live_strategy
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_start_stop_pause_strategy
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_dashboard
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_recent_signals
+ERROR tests/test_phase9_e2e.py::TestLiveTradingAPIEndpoints::test_get_positions
+ERROR tests/test_phase9_e2e.py::TestAuthenticationAndAuthorization::test_user_isolation
+ERROR tests/test_phase9_e2e.py::TestInputValidation::test_invalid_check_interval
+ERROR tests/test_phase9_e2e.py::TestInputValidation::test_invalid_max_positions
+ERROR tests/test_phase9_e2e.py::TestInputValidation::test_empty_symbols - Att...
+ERROR tests/test_phase9_e2e.py::TestErrorHandling::test_nonexistent_strategy
+ERROR tests/test_phase9_e2e.py::TestErrorHandling::test_nonexistent_base_strategy
+ERROR tests/test_phase9_e2e.py::TestErrorHandling::test_update_active_strategy
+ERROR tests/test_phase9_e2e.py::TestDataIntegrity::test_strategy_persists - A...
+ERROR tests/test_phase9_e2e.py::TestDataIntegrity::test_strategy_defaults - A...
+======= 9 failed, 18 passed, 3 skipped, 35 warnings, 19 errors in 1.61s ========
+sys:1: RuntimeWarning: coroutine 'AsyncClient.post' was never awaited

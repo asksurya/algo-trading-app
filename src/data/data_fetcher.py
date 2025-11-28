@@ -118,11 +118,32 @@ class DataFetcher:
                 # Calculate if we need to fetch new data
                 last_date = datetime.strptime(last_cached_date, '%Y-%m-%d')
                 end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+                start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
                 
-                # If cache is up to date, return it
-                if last_date >= end_datetime:
+                # If cache is up to date and we have data in the cache for this range, return it
+                if last_date >= end_datetime and cached_df is not None and not cached_df.empty:
                     self.logger.info(f"Cache is up to date for {symbol}")
                     return cached_df
+                
+                # If requested end date is BEFORE last cached date, cache is newer than requested data
+                # Fetch all data directly (this handles historical backtests when cache has recent data)
+                if end_datetime < last_date:
+                    self.logger.info(f"Requested date range ({start_date} to {end_date}) is before cached data ({last_cached_date}), fetching fresh historical data")
+                    if self.data_provider == 'alpaca':
+                        df = self._fetch_alpaca_data(symbol, start_date, end_date, timeframe)
+                    else:
+                        df = self._fetch_yahoo_data(symbol, start_date, end_date)
+                    return df
+                
+                # If requested start date is after last cached date, cache is not useful
+                # Fetch all data directly
+                if start_datetime > last_date:
+                    self.logger.info(f"Requested date range is after cached data, fetching fresh data")
+                    if self.data_provider == 'alpaca':
+                        df = self._fetch_alpaca_data(symbol, start_date, end_date, timeframe)
+                    else:
+                        df = self._fetch_yahoo_data(symbol, start_date, end_date)
+                    return df
                 
                 # Fetch only new data since last cached date
                 fetch_start = (last_date + timedelta(days=1)).strftime('%Y-%m-%d')

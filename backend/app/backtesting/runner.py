@@ -56,7 +56,7 @@ class BacktestRunner:
         try:
             # Update status to running
             backtest.status = BacktestStatus.RUNNING
-            backtest.started_at = datetime.utcnow()
+            backtest.started_at = datetime.now(datetime.UTC)
             await self.session.commit()
             
             # Fetch historical data (with caching)
@@ -81,7 +81,7 @@ class BacktestRunner:
             
             # Update status to completed
             backtest.status = BacktestStatus.COMPLETED
-            backtest.completed_at = datetime.utcnow()
+            backtest.completed_at = datetime.now(datetime.UTC)
             backtest.duration_seconds = (
                 backtest.completed_at - backtest.started_at
             ).total_seconds()
@@ -114,7 +114,7 @@ class BacktestRunner:
             logger.error(f"Backtest {backtest_id} failed: {e}")
             backtest.status = BacktestStatus.FAILED
             backtest.error_message = str(e)
-            backtest.completed_at = datetime.utcnow()
+            backtest.completed_at = datetime.now(datetime.UTC)
             await self.session.commit()
             raise
             
