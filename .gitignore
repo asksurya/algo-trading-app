@@ -50,7 +50,7 @@ data/cache/
 *.csv
 
 # Models (will be retrained on cloud)
-models/
+/models/
 *.pkl
 
 # API Keys and Secrets

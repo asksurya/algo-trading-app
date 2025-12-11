@@ -1,0 +1,172 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.1, pytest-9.0.1, pluggy-1.6.0
+rootdir: /Users/ashwin/Desktop/algo-trading-app/backend
+configfile: pytest.ini
+plugins: anyio-4.11.0, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+backend/tests/test_backtesting_e2e.py F                                  [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_backtest_e2e_flow ____________________________
+
+client = <httpx.AsyncClient object at 0x11fb274a0>
+auth_headers = {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3ODE5Yzc4Zi02MDc4LTQ1YjQtOTU4Ni01NTdhMGEzZjllYjkiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NDI2NDgxfQ.b80Q0u3_0JpuTj6v5i4jJ2UxjZbu8N9iTEMLClsmDf8'}
+mock_market_data_cache = <MagicMock name='MarketDataCacheService()' id='4828620816'>
+
+    @pytest.mark.asyncio
+    async def test_backtest_e2e_flow(client, auth_headers, mock_market_data_cache):
+        """
+        Test the full backtesting flow:
+        1. Create a strategy
+        2. Create and run a backtest
+        3. Verify results
+        """
+    
+        # 1. Create Strategy
+        strategy_data = {
+            "name": "E2E Test Strategy",
+            "description": "Test Strategy",
+            "strategy_type": "sma_crossover",
+            "parameters": {
+                "symbol": "AAPL",
+                "short_window": 10,
+                "long_window": 20
+            }
+        }
+    
+        response = await client.post(
+            "/api/v1/strategies",
+            json=strategy_data,
+            headers=auth_headers
+        )
+        assert response.status_code == 201
+        strategy_id = response.json()["id"]
+    
+        # 2. Create and Run Backtest
+        backtest_data = {
+            "strategy_id": strategy_id,
+            "name": "E2E Backtest",
+            "start_date": "2023-01-01",
+            "end_date": "2023-01-31",
+            "initial_capital": 10000.0,
+            "commission": 0.0,
+            "slippage": 0.0
+        }
+    
+        response = await client.post(
+            "/api/v1/backtests",
+            json=backtest_data,
+            headers=auth_headers
+        )
+    
+>       assert response.status_code == 201
+E       assert 404 == 201
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+backend/tests/test_backtesting_e2e.py:73: AssertionError
+----------------------------- Captured stdout call -----------------------------
+payload from token: {'sub': '7819c78f-6078-45b4-9586-557a0a3f9eb9', 'type': 'access', 'exp': 1765426481}
+user_id from token: 7819c78f-6078-45b4-9586-557a0a3f9eb9
+payload from token: {'sub': '7819c78f-6078-45b4-9586-557a0a3f9eb9', 'type': 'access', 'exp': 1765426481}
+user_id from token: 7819c78f-6078-45b4-9586-557a0a3f9eb9
+DEBUG: Looking for strategy ID: UUID('cdedd02c-af46-49b4-87fe-a8b93d98fdac')
+DEBUG: Current User ID: '7819c78f-6078-45b4-9586-557a0a3f9eb9'
+DEBUG: Found 1 strategies in DB:
+  - Strat ID: 'cdedd02c-af46-49b4-87fe-a8b93d98fdac', User ID: '7819c78f-6078-45b4-9586-557a0a3f9eb9'
+    -> EXPLICIT STRING MATCH FOUND!
+DEBUG: Found strategy: None
+=============================== warnings summary ===============================
+backend/app/schemas/user.py:42
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/user.py:42: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class UserResponse(UserBase):
+
+backend/app/schemas/strategy.py:39
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:39: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyResponse(StrategyBase):
+
+backend/app/schemas/strategy.py:69
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:69: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyTickerResponse(StrategyTickerBase):
+
+backend/app/schemas/strategy.py:95
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/strategy.py:95: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    tickers: List[str] = Field(
+
+backend/app/schemas/trade.py:31
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/trade.py:31: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TradeResponse(TradeBase):
+
+backend/app/schemas/trade.py:55
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/trade.py:55: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PositionResponse(PositionBase):
+
+../../.pyenv/versions/3.12.1/lib/python3.12/site-packages/websockets/legacy/__init__.py:6
+  /Users/ashwin/.pyenv/versions/3.12.1/lib/python3.12/site-packages/websockets/legacy/__init__.py:6: DeprecationWarning: websockets.legacy is deprecated; see https://websockets.readthedocs.io/en/stable/howto/upgrade.html for upgrade instructions
+    warnings.warn(  # deprecated in 14.0 - 2024-11-09
+
+backend/app/schemas/risk_rule.py:40
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/risk_rule.py:40: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class RiskRuleResponse(RiskRuleBase):
+
+backend/app/schemas/order.py:32
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/order.py:32: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class OrderResponse(OrderBase):
+
+backend/app/schemas/api_key.py:39
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/api_key.py:39: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ApiKeyResponse(ApiKeyBase):
+
+backend/app/schemas/api_key.py:81
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/api_key.py:81: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class ApiKeyAuditLogResponse(BaseModel):
+
+backend/app/schemas/notification.py:32
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/notification.py:32: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NotificationResponse(NotificationBase):
+
+backend/app/schemas/notification.py:83
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/notification.py:83: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class NotificationPreferenceResponse(NotificationPreferenceBase):
+
+backend/app/schemas/optimizer.py:12
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:12: PydanticDeprecatedSince20: `min_items` is deprecated and will be removed, use `min_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    symbols: List[str] = Field(
+
+backend/app/schemas/optimizer.py:12
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:12: PydanticDeprecatedSince20: `max_items` is deprecated and will be removed, use `max_length` instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    symbols: List[str] = Field(
+
+backend/app/schemas/optimizer.py:37
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:37: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class StrategyPerformanceSchema(BaseModel):
+
+backend/app/schemas/optimizer.py:56
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/optimizer.py:56: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class OptimizationResultSchema(BaseModel):
+
+backend/app/schemas/portfolio.py:40
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/portfolio.py:40: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PerformanceMetricsResponse(BaseModel):
+
+backend/app/schemas/portfolio.py:102
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/portfolio.py:102: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class TaxLotResponse(BaseModel):
+
+backend/app/schemas/watchlist.py:27
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/watchlist.py:27: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class WatchlistItemResponse(BaseModel):
+
+backend/app/schemas/watchlist.py:44
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/watchlist.py:44: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class WatchlistResponse(BaseModel):
+
+backend/app/schemas/watchlist.py:74
+  /Users/ashwin/Desktop/algo-trading-app/backend/app/schemas/watchlist.py:74: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PriceAlertResponse(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_backtesting_e2e.py::test_backtest_e2e_flow - assert...
+======================== 1 failed, 22 warnings in 0.55s ========================

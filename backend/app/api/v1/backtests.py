@@ -38,16 +38,15 @@ async def create_backtest(
     The backtest will be created with status='pending' and can be executed
     by calling the run endpoint or automatically by a background worker.
     """
-    # Verify strategy exists and belongs to user
+    # Check if strategy exists and belongs to user
     result = await session.execute(
         select(Strategy).where(
-            and_(
-                Strategy.id == backtest_data.strategy_id,
-                Strategy.user_id == current_user.id
-            )
+            Strategy.id == str(backtest_data.strategy_id),
+            Strategy.user_id == current_user.id
         )
     )
     strategy = result.scalar_one_or_none()
+    print(f"DEBUG: Found strategy: {strategy}")
     
     if not strategy:
         raise HTTPException(
@@ -73,6 +72,9 @@ async def create_backtest(
     await session.commit()
     await session.refresh(backtest)
     
+    # Cache ID string before running (to avoid detached instance access later)
+    backtest_id_str = str(backtest.id)
+    
     # Run backtest asynchronously
     try:
         runner = BacktestRunner(session)
@@ -82,8 +84,8 @@ async def create_backtest(
             "success": True,
             "message": "Backtest created and executed successfully",
             "data": {
-                "id": str(backtest.id),
-                "status": backtest.status.value,
+                "id": backtest_id_str,
+                "status": result.get("status", "completed"),
                 "result": result
             }
         }
@@ -92,7 +94,7 @@ async def create_backtest(
             "success": True,
             "message": "Backtest created but execution failed",
             "data": {
-                "id": str(backtest.id),
+                "id": backtest_id_str,
                 "status": "failed",
                 "error": str(e)
             }
@@ -121,7 +123,7 @@ async def list_backtests(
     query = select(Backtest).where(Backtest.user_id == current_user.id)
     
     if strategy_id:
-        query = query.where(Backtest.strategy_id == strategy_id)
+        query = query.where(Backtest.strategy_id == str(strategy_id))
     
     if status_filter:
         query = query.where(Backtest.status == status_filter)
@@ -164,7 +166,7 @@ async def get_backtest(
     result = await session.execute(
         select(Backtest).where(
             and_(
-                Backtest.id == backtest_id,
+                Backtest.id == str(backtest_id),
                 Backtest.user_id == current_user.id
             )
         )
@@ -179,7 +181,7 @@ async def get_backtest(
     
     # Get results
     result = await session.execute(
-        select(BacktestResult).where(BacktestResult.backtest_id == backtest_id)
+        select(BacktestResult).where(BacktestResult.backtest_id == str(backtest_id))
     )
     backtest_result = result.scalar_one_or_none()
     
@@ -188,7 +190,7 @@ async def get_backtest(
     if include_trades:
         result = await session.execute(
             select(BacktestTrade)
-            .where(BacktestTrade.backtest_id == backtest_id)
+            .where(BacktestTrade.backtest_id == str(backtest_id))
             .order_by(BacktestTrade.entry_date)
         )
         trades = result.scalars().all()
@@ -217,7 +219,7 @@ async def get_backtest_status(
     result = await session.execute(
         select(Backtest).where(
             and_(
-                Backtest.id == backtest_id,
+                Backtest.id == str(backtest_id),
                 Backtest.user_id == current_user.id
             )
         )
@@ -263,7 +265,7 @@ async def delete_backtest(
     result = await session.execute(
         select(Backtest).where(
             and_(
-                Backtest.id == backtest_id,
+                Backtest.id == str(backtest_id),
                 Backtest.user_id == current_user.id
             )
         )

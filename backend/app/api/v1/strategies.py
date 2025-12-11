@@ -66,7 +66,7 @@ async def create_strategy(
     db.add(new_strategy)
     await db.commit()
     await db.refresh(new_strategy)
-    db.expire(new_strategy)  # Force reload from database to ensure data visibility
+    # db.expire(new_strategy) removed
 
     # Add tickers if provided
     if strategy_data.tickers:
@@ -78,7 +78,7 @@ async def create_strategy(
             db.add(strategy_ticker)
 
         await db.commit()
-        db.expire(new_strategy)  # Expire after ticker commit for visibility
+        # db.expire(new_strategy) removed
 
     return new_strategy
 

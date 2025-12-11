@@ -6,12 +6,12 @@ FROM python:3.12-slim as builder
 WORKDIR /app
 
 # Copy requirements file
-COPY requirements.txt ./
+COPY backend/requirements.txt ./
 
 # Install dependencies to a virtual environment
-RUN python -m venv /app/.venv && \
-    /app/.venv/bin/pip install --upgrade pip && \
-    /app/.venv/bin/pip install -r requirements.txt
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip && \
+    /opt/venv/bin/pip install -r requirements.txt
 
 # --- Runner Stage ---
 FROM python:3.12-slim
@@ -22,16 +22,18 @@ WORKDIR /app
 RUN useradd --create-home --shell /bin/bash appuser
 
 # Copy virtual environment from builder stage
-COPY --from=builder /app/.venv ./.venv
+COPY --from=builder /opt/venv /opt/venv
 
 # Activate virtual environment
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH="${PYTHONPATH}:/app"
 
 # Copy application code
-COPY ./app ./app
-COPY gunicorn_conf.py .
-COPY alembic.ini .
-COPY migrations ./migrations
+COPY backend/app ./app
+COPY backend/gunicorn_conf.py .
+COPY backend/alembic.ini .
+COPY backend/migrations ./migrations
+COPY src ./src
 
 # Change ownership
 RUN chown -R appuser:appuser /app
@@ -45,5 +47,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
-# Run with uvicorn using full path from virtual environment
-CMD ["/app/.venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run with uvicorn
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

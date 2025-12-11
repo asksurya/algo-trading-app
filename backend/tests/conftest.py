@@ -1,81 +1,95 @@
+"""
+Test configuration and fixtures for the backend test suite.
+
+Provides database fixtures and test client setup.
+"""
 import os
 from typing import AsyncGenerator
+
+import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from httpx import AsyncClient, ASGITransport
+
+# Set test environment BEFORE importing app modules
+os.environ["ENVIRONMENT"] = "test"
+os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
+os.environ["REDIS_URL"] = "redis://localhost:6379"
+os.environ["SECRET_KEY"] = "test-secret-key-must-be-at-least-32-characters-long"
+os.environ["ALPACA_API_KEY"] = "test-api-key"
+os.environ["ALPACA_SECRET_KEY"] = "test-secret-key"
+
 from app.main import app
-from app.database import get_async_session_local, get_engine, Base
-from app.core.config import settings
+from app.models.base import Base
 from app.models.user import User, UserRole
 from app.core.security import get_password_hash
 from app.dependencies import get_db
-from httpx import AsyncClient, ASGITransport
-import pytest
-import pytest_asyncio
 
-# Use file-based SQLite for testing
-TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
-# Override database settings for testing
-settings.DATABASE_URL = TEST_DATABASE_URL
-settings.ENVIRONMENT = "test"
+# Use in-memory SQLite for testing
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
-# Initialize the test engine and session local after settings are overridden
-test_engine = get_engine()
-TestingSessionLocal = get_async_session_local()
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def setup_database():
-    """Create and drop tables once for the entire test session."""
-    # Ensure the test database file is clean before starting
-    if os.path.exists("./test.db"):
-        os.remove("./test.db")
-
-    async with test_engine.begin() as conn:
+@pytest_asyncio.fixture(scope="function")
+async def test_engine():
+    """Create a test database engine for each test function."""
+    engine = create_async_engine(
+        TEST_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=False,
+    )
+    
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield
-    async with test_engine.begin() as conn:
+    
+    yield engine
+    
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
-    # Clean up the test database file after the session
-    if os.path.exists("./test.db"):
-        os.remove("./test.db")
+    
+    await engine.dispose()
+
 
 @pytest_asyncio.fixture(scope="function")
-async def db(setup_database):
-    """Create a test database session with a transactional rollback."""
-    connection = await test_engine.connect()
-    transaction = await connection.begin()
-    session = TestingSessionLocal(bind=connection)
-    try:
-        yield session
-    finally:
-        await transaction.rollback() # Rollback the transaction
-        await session.close()
-        await connection.close()
+async def db(test_engine) -> AsyncGenerator[AsyncSession, None]:
+    """Create a test database session with transaction rollback."""
+    async_session_factory = async_sessionmaker(
+        bind=test_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+        autoflush=True,
+        autocommit=False,
+    )
+    
+    async with async_session_factory() as session:
+        try:
+            yield session
+        finally:
+            await session.rollback()
+            await session.close()
+
 
 @pytest_asyncio.fixture(scope="function")
-async def client(db):
+async def client(db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     """Create an async test client with database override."""
     original_commit = db.commit
-
-    # This function will be used to override the get_db dependency
+    
     async def override_get_db():
-        # Patch the commit method to prevent actual commits in tests
-        # Instead, it will just flush the session
         async def mock_commit(*args, **kwargs):
             await db.flush()
-            db.expire_all()  # Force reload of all cached objects to ensure visibility
-
+            db.expire_all()
+        
         db.commit = mock_commit.__get__(db, AsyncSession)
-
+        
         try:
             yield db
         finally:
             pass
-
+    
     app.dependency_overrides[get_db] = override_get_db
     
-    # Use httpx.AsyncClient with ASGITransport
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test"
@@ -85,8 +99,9 @@ async def client(db):
     app.dependency_overrides.clear()
     db.commit = original_commit
 
+
 @pytest_asyncio.fixture(scope="function")
-async def committed_test_user(db: AsyncSession):
+async def committed_test_user(db: AsyncSession) -> User:
     """Create a test user for authentication tests."""
     user = User(
         email="committed_test@example.com",
@@ -97,10 +112,11 @@ async def committed_test_user(db: AsyncSession):
     db.add(user)
     await db.flush()
     await db.refresh(user)
-    yield user
+    return user
 
-@pytest_asyncio.fixture
-async def auth_headers(client, committed_test_user):
+
+@pytest_asyncio.fixture(scope="function")
+async def auth_headers(client: AsyncClient, committed_test_user: User):
     """Get authentication headers with valid JWT token."""
     response = await client.post(
         "/api/v1/auth/login",
@@ -108,4 +124,4 @@ async def auth_headers(client, committed_test_user):
     )
     assert response.status_code == 200, f"Login failed: {response.text}"
     token = response.json()["access_token"]
-    yield {"Authorization": f"Bearer {token}"}
+    return {"Authorization": f"Bearer {token}"}
