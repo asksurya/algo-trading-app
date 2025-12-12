@@ -4,6 +4,7 @@ Handles user registration, login, token refresh, and logout.
 """
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -113,12 +114,8 @@ async def login(
         expires_delta=access_token_expires
     )
     
-    # Create refresh token
-    refresh_token_expires = timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    refresh_token = create_access_token(
-        data={"sub": str(user_id), "type": "refresh"},
-        expires_delta=refresh_token_expires
-    )
+    # Create refresh token (use create_refresh_token which sets type="refresh")
+    refresh_token = create_refresh_token(data={"sub": str(user_id)})
     
     return Token(
         access_token=access_token,
@@ -127,9 +124,13 @@ async def login(
     )
 
 
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
 @router.post("/refresh", response_model=Token)
-async def refresh_token(
-    refresh_token: str,
+async def refresh_token_endpoint(
+    request_data: RefreshTokenRequest,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -140,7 +141,7 @@ async def refresh_token(
     Returns new access token and refresh token.
     """
     # Decode refresh token
-    payload = decode_token(refresh_token)
+    payload = decode_token(request_data.refresh_token)
     
     if payload is None:
         raise HTTPException(

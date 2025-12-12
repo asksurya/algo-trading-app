@@ -129,10 +129,13 @@ async def list_backtests(
         query = query.where(Backtest.status == status_filter)
     
     # Count total
-    count_result = await session.execute(
-        query.with_only_columns(select([func.count()]).select_from(Backtest))
-    )
-    total = count_result.scalar()
+    count_query = select(func.count()).select_from(Backtest).where(Backtest.user_id == current_user.id)
+    if strategy_id:
+        count_query = count_query.where(Backtest.strategy_id == str(strategy_id))
+    if status_filter:
+        count_query = count_query.where(Backtest.status == status_filter)
+    count_result = await session.execute(count_query)
+    total = count_result.scalar() or 0
     
     # Get paginated results
     query = query.order_by(desc(Backtest.created_at))
