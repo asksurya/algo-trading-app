@@ -51,6 +51,7 @@ from app.models.live_strategy import LiveStrategy, SignalHistory
 from app.models.backtest import Backtest, BacktestResult, BacktestTrade
 from app.models.strategy_execution import StrategyExecution, StrategySignal, StrategyPerformance
 from app.models.portfolio import PortfolioSnapshot, PerformanceMetrics, TaxLot
+from app.models.paper_trading import PaperAccount, PaperPosition, PaperTrade
 
 __all__ = [
     # Base
@@ -116,4 +117,8 @@ __all__ = [
     "PortfolioSnapshot",
     "PerformanceMetrics",
     "TaxLot",
+    # Models - Paper Trading
+    "PaperAccount",
+    "PaperPosition",
+    "PaperTrade",
 ]
