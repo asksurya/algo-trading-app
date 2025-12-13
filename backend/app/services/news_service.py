@@ -4,7 +4,9 @@ News service for aggregating market news from various sources.
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import aiohttp
+import asyncio
 import os
+from textblob import TextBlob
 
 
 class NewsService:
@@ -89,9 +91,20 @@ class NewsService:
         Returns:
             Sentiment: 'positive', 'negative', or 'neutral'
         """
-        # TODO: Implement sentiment analysis
-        # For now, return neutral
-        return "neutral"
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self._analyze_sentiment_sync, text)
+
+    def _analyze_sentiment_sync(self, text: str) -> str:
+        """Synchronous helper for sentiment analysis."""
+        blob = TextBlob(text)
+        polarity = blob.sentiment.polarity
+
+        if polarity > 0.1:
+            return "positive"
+        elif polarity < -0.1:
+            return "negative"
+        else:
+            return "neutral"
 
 
 # Singleton instance  
