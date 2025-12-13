@@ -29,7 +29,7 @@ class WatchlistItemResponse(BaseModel):
     id: str
     symbol: str
     notes: Optional[str] = None
-    added_at: datetime
+    created_at: datetime
     
     # Real-time market data (populated from broker)
     current_price: Optional[float] = None

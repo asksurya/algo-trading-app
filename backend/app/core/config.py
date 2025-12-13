@@ -96,6 +96,11 @@ class Settings(BaseSettings):
         """Check if running in development environment."""
         return self.ENVIRONMENT.lower() == "development"
 
+    @property
+    def is_test(self) -> bool:
+        """Check if running in test environment."""
+        return self.ENVIRONMENT.lower() == "test"
+
 
 # Global settings instance
 settings = Settings()
