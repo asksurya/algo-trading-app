@@ -301,24 +301,46 @@ class PortfolioAnalyticsService:
         
         # Calculate daily returns
         daily_returns = []
+        monthly_map = {}
+        weekly_map = {}
+
         for i in range(1, len(data_points)):
             prev_equity = data_points[i-1]["equity"]
             curr_equity = data_points[i]["equity"]
+            date = data_points[i]["date"]
+
             if prev_equity > 0:
-                ret = ((curr_equity - prev_equity) / prev_equity) * 100
-                daily_returns.append(ret)
+                ret = ((curr_equity - prev_equity) / prev_equity)
+                daily_returns.append(ret * 100)
+
+                # Monthly Aggregation
+                m_key = (date.year, date.month)
+                if m_key not in monthly_map:
+                    monthly_map[m_key] = 1.0
+                monthly_map[m_key] *= (1 + ret)
+
+                # Weekly Aggregation
+                iso_cal = date.isocalendar()
+                w_key = (iso_cal[0], iso_cal[1])
+                if w_key not in weekly_map:
+                    weekly_map[w_key] = 1.0
+                weekly_map[w_key] *= (1 + ret)
         
         positive_days = sum(1 for r in daily_returns if r > 0)
         negative_days = sum(1 for r in daily_returns if r < 0)
+
+        # Convert maps to lists (percentage)
+        monthly_returns = [(val - 1) * 100 for key, val in sorted(monthly_map.items())]
+        weekly_returns = [(val - 1) * 100 for key, val in sorted(weekly_map.items())]
         
         return {
             "daily_returns": daily_returns,
-            "weekly_returns": [],  # TODO: Implement weekly aggregation
-            "monthly_returns": [],  # TODO: Implement monthly aggregation
+            "weekly_returns": weekly_returns,
+            "monthly_returns": monthly_returns,
             "best_day": max(daily_returns) if daily_returns else 0.0,
             "worst_day": min(daily_returns) if daily_returns else 0.0,
-            "best_month": 0.0,  # TODO
-            "worst_month": 0.0,  # TODO
+            "best_month": max(monthly_returns) if monthly_returns else 0.0,
+            "worst_month": min(monthly_returns) if monthly_returns else 0.0,
             "positive_days": positive_days,
             "negative_days": negative_days,
             "avg_daily_return": sum(daily_returns) / len(daily_returns) if daily_returns else 0.0
