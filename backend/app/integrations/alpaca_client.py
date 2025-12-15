@@ -166,6 +166,48 @@ class AlpacaClient:
             logger.error(f"Unexpected error in {operation}: {str(error)}")
             raise AlpacaAPIError(f"Unexpected error in {operation}: {str(error)}", original_error=error)
     
+    def _parse_order(self, order: Any) -> Dict[str, Any]:
+        """
+        Parse Alpaca Order object to dictionary, including multi-leg orders.
+
+        Args:
+            order: Alpaca Order object
+
+        Returns:
+            Dictionary representation of order
+        """
+        order_data = {
+            "id": str(order.id),
+            "client_order_id": order.client_order_id,
+            "created_at": order.created_at.isoformat() if order.created_at else None,
+            "updated_at": order.updated_at.isoformat() if order.updated_at else None,
+            "submitted_at": order.submitted_at.isoformat() if order.submitted_at else None,
+            "filled_at": order.filled_at.isoformat() if order.filled_at else None,
+            "expired_at": order.expired_at.isoformat() if order.expired_at else None,
+            "canceled_at": order.canceled_at.isoformat() if order.canceled_at else None,
+            "failed_at": order.failed_at.isoformat() if order.failed_at else None,
+            "asset_id": str(order.asset_id),
+            "symbol": order.symbol,
+            "asset_class": order.asset_class.value,
+            "qty": float(order.qty) if order.qty else None,
+            "filled_qty": float(order.filled_qty),
+            "type": order.type.value,
+            "side": order.side.value,
+            "time_in_force": order.time_in_force.value,
+            "limit_price": float(order.limit_price) if order.limit_price else None,
+            "stop_price": float(order.stop_price) if order.stop_price else None,
+            "filled_avg_price": float(order.filled_avg_price) if order.filled_avg_price else None,
+            "status": order.status.value,
+            "extended_hours": order.extended_hours,
+            "legs": [],
+        }
+
+        # Handle multi-leg orders recursively
+        if hasattr(order, 'legs') and order.legs:
+            order_data['legs'] = [self._parse_order(leg) for leg in order.legs]
+
+        return order_data
+
     @retry(
         retry=retry_if_exception_type((APIError,)),
         stop=stop_after_attempt(3),
@@ -354,33 +396,7 @@ class AlpacaClient:
             orders = self._client.get_orders(filter=request_params)
             
             # Convert to list of dicts
-            orders_data = []
-            for order in orders:
-                orders_data.append({
-                    "id": str(order.id),
-                    "client_order_id": order.client_order_id,
-                    "created_at": order.created_at.isoformat() if order.created_at else None,
-                    "updated_at": order.updated_at.isoformat() if order.updated_at else None,
-                    "submitted_at": order.submitted_at.isoformat() if order.submitted_at else None,
-                    "filled_at": order.filled_at.isoformat() if order.filled_at else None,
-                    "expired_at": order.expired_at.isoformat() if order.expired_at else None,
-                    "canceled_at": order.canceled_at.isoformat() if order.canceled_at else None,
-                    "failed_at": order.failed_at.isoformat() if order.failed_at else None,
-                    "asset_id": str(order.asset_id),
-                    "symbol": order.symbol,
-                    "asset_class": order.asset_class.value,
-                    "qty": float(order.qty) if order.qty else None,
-                    "filled_qty": float(order.filled_qty),
-                    "type": order.type.value,
-                    "side": order.side.value,
-                    "time_in_force": order.time_in_force.value,
-                    "limit_price": float(order.limit_price) if order.limit_price else None,
-                    "stop_price": float(order.stop_price) if order.stop_price else None,
-                    "filled_avg_price": float(order.filled_avg_price) if order.filled_avg_price else None,
-                    "status": order.status.value,
-                    "extended_hours": order.extended_hours,
-                    "legs": [],  # TODO: Handle multi-leg orders if needed
-                })
+            orders_data = [self._parse_order(order) for order in orders]
             
             # Cache for 10 seconds if requested
             if use_cache:
