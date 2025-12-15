@@ -1,25 +1,27 @@
 """
-Watchlist and Price Alert models.
+Watchlist models.
 """
+import uuid
 from datetime import datetime
-from typing import Optional, List
-from sqlalchemy import String, Float, Boolean, DateTime, ForeignKey, Text
+from typing import List, Optional
+
+from sqlalchemy import String, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-import uuid
 
 from app.models.base import Base, TimestampMixin
 
+
 class Watchlist(Base, TimestampMixin):
-    """
-    User watchlist collection.
-    """
+    """Watchlist model."""
+
     __tablename__ = "watchlists"
 
     id: Mapped[str] = mapped_column(
         String(36),
         primary_key=True,
-        default=lambda: str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4()),
+        index=True
     )
     user_id: Mapped[str] = mapped_column(
         String(36),
@@ -28,30 +30,28 @@ class Watchlist(Base, TimestampMixin):
         index=True
     )
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text)
+    description: Mapped[Optional[str]] = mapped_column(String(500))
 
     # Relationships
+    user = relationship("User", back_populates="watchlists")
     items: Mapped[List["WatchlistItem"]] = relationship(
         "WatchlistItem",
         back_populates="watchlist",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        lazy="selectin"
     )
-    user = relationship("User", backref="watchlists")
-
-    def __repr__(self) -> str:
-        return f"<Watchlist(id={self.id}, name={self.name})>"
 
 
 class WatchlistItem(Base, TimestampMixin):
-    """
-    Individual item in a watchlist.
-    """
+    """Watchlist item model."""
+
     __tablename__ = "watchlist_items"
 
     id: Mapped[str] = mapped_column(
         String(36),
         primary_key=True,
-        default=lambda: str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4()),
+        index=True
     )
     watchlist_id: Mapped[str] = mapped_column(
         String(36),
@@ -59,26 +59,23 @@ class WatchlistItem(Base, TimestampMixin):
         nullable=False,
         index=True
     )
-    symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text)
+    symbol: Mapped[str] = mapped_column(String(10), nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(String(500))
 
     # Relationships
-    watchlist: Mapped["Watchlist"] = relationship("Watchlist", back_populates="items")
-
-    def __repr__(self) -> str:
-        return f"<WatchlistItem(id={self.id}, symbol={self.symbol})>"
+    watchlist = relationship("Watchlist", back_populates="items")
 
 
 class PriceAlert(Base, TimestampMixin):
-    """
-    Price alert for a symbol.
-    """
+    """Price alert model."""
+
     __tablename__ = "price_alerts"
 
     id: Mapped[str] = mapped_column(
         String(36),
         primary_key=True,
-        default=lambda: str(uuid.uuid4())
+        default=lambda: str(uuid.uuid4()),
+        index=True
     )
     user_id: Mapped[str] = mapped_column(
         String(36),
@@ -86,19 +83,12 @@ class PriceAlert(Base, TimestampMixin):
         nullable=False,
         index=True
     )
-    symbol: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    condition: Mapped[str] = mapped_column(
-        String(10),
-        nullable=False,
-        comment="'above' or 'below'"
-    )
+    symbol: Mapped[str] = mapped_column(String(10), nullable=False)
+    condition: Mapped[str] = mapped_column(String(10), nullable=False)  # 'above' or 'below'
     target_price: Mapped[float] = mapped_column(Float, nullable=False)
     message: Mapped[Optional[str]] = mapped_column(String(200))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     triggered_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     # Relationships
-    user = relationship("User", backref="price_alerts")
-
-    def __repr__(self) -> str:
-        return f"<PriceAlert(id={self.id}, symbol={self.symbol}, condition={self.condition}, target={self.target_price})>"
+    user = relationship("User", back_populates="price_alerts")
