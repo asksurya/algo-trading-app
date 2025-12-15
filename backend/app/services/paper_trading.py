@@ -296,6 +296,9 @@ class PaperTradingService:
         # Let's refresh explicitly
         await self.session.refresh(account_final)
         
+        await self.session.commit()
+        await self.session.refresh(account)
+
         return {
             "success": True,
             "trade": trade_dict,
@@ -354,9 +357,57 @@ class PaperTradingService:
 
         return trades_list
 
+        result = await self.session.execute(stmt)
+        trades = result.scalars().all()
 
-# Singleton instance
-_paper_trading_service = None
+        return [
+            {
+                "symbol": t.symbol,
+                "qty": t.qty,
+                "side": t.side,
+                "price": t.price,
+                "value": t.value,
+                "timestamp": t.timestamp
+            }
+            for t in trades
+        ]
+
+    def _format_account(self, account: PaperAccount) -> Dict:
+        """Helper to format account model to dictionary."""
+        positions_dict = {}
+        # Recalculate positions value and pnl if possible?
+        # For now return stored values
+        for pos in account.positions:
+            positions_dict[pos.symbol] = {
+                'qty': pos.qty,
+                'avg_price': pos.avg_price,
+                'market_value': pos.market_value,
+                'unrealized_pnl': pos.unrealized_pnl
+            }
+
+        trades_list = [
+            {
+                "symbol": t.symbol,
+                "qty": t.qty,
+                "side": t.side,
+                "price": t.price,
+                "value": t.value,
+                "timestamp": t.timestamp
+            }
+            for t in sorted(account.trades, key=lambda x: x.timestamp)
+        ]
+
+        return {
+            "user_id": account.user_id,
+            "cash_balance": account.cash_balance,
+            "initial_balance": account.initial_balance,
+            "positions": positions_dict,
+            "orders": [], # Orders not persisted separately yet
+            "trades": trades_list,
+            "created_at": account.created_at,
+            "total_pnl": account.total_pnl,
+            "total_return_pct": account.total_return_pct
+        }
 
 
 async def get_paper_trading_service(session: AsyncSession = None) -> PaperTradingService:

@@ -11,7 +11,8 @@ COPY backend/requirements.txt ./
 # Install dependencies to a virtual environment
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade pip && \
-    /opt/venv/bin/pip install -r requirements.txt
+    /opt/venv/bin/pip install -r requirements.txt && \
+    NLTK_DATA=/opt/venv/nltk_data /opt/venv/bin/python -m textblob.download_corpora
 
 # --- Runner Stage ---
 FROM python:3.12-slim
@@ -27,6 +28,7 @@ COPY --from=builder /opt/venv /opt/venv
 # Activate virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONPATH="${PYTHONPATH}:/app"
+ENV NLTK_DATA="/opt/venv/nltk_data"
 
 # Copy application code
 COPY backend/app ./app

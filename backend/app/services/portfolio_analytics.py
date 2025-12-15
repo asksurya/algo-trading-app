@@ -8,6 +8,7 @@ from sqlalchemy import select, and_, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.integrations.alpaca_client import AlpacaClient
+from app.models.portfolio import PortfolioSnapshot
 
 
 class PortfolioAnalyticsService:
@@ -51,47 +52,32 @@ class PortfolioAnalyticsService:
     async def get_equity_curve(self, user_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict:
         """
         Get equity curve data points for charting.
-        
-        Note: For now, this returns mock data. In production, this would:
-        1. Query portfolio_snapshots table
-        2. Calculate daily equity values
-        3. Return time series data
         """
-        # TODO: Replace with actual database query once models are deployed
-        # from app.models.portfolio import PortfolioSnapshot
-        # query = select(PortfolioSnapshot).where(
-        #     and_(
-        #         PortfolioSnapshot.user_id == user_id,
-        #         PortfolioSnapshot.snapshot_date >= start_date,
-        #         PortfolioSnapshot.snapshot_date <= end_date
-        #     )
-        # ).order_by(PortfolioSnapshot.snapshot_date)
-        # result = await self.session.execute(query)
-        # snapshots = result.scalars().all()
-        
         if not end_date:
             end_date = datetime.utcnow()
         if not start_date:
             start_date = end_date - timedelta(days=30)
+
+        query = select(PortfolioSnapshot).where(
+            and_(
+                PortfolioSnapshot.user_id == user_id,
+                PortfolioSnapshot.snapshot_date >= start_date,
+                PortfolioSnapshot.snapshot_date <= end_date
+            )
+        ).order_by(PortfolioSnapshot.snapshot_date)
         
-        # Placeholder implementation
-        account = await self.broker.get_account()
-        current_equity = float(account.get('equity', 100000))
+        result = await self.session.execute(query)
+        snapshots = result.scalars().all()
         
-        # Generate sample data points (replace with real data from DB)
         data_points = []
-        days = (end_date - start_date).days
-        for i in range(days + 1):
-            date = start_date + timedelta(days=i)
-            # Simple linear progression (replace with actual historical data)
-            equity = current_equity * (1 - 0.1 * ((days - i) / days))
+        for snapshot in snapshots:
             data_points.append({
-                "date": date,
-                "equity": equity,
-                "daily_return": 0.0,
-                "cumulative_return": ((equity / current_equity) - 1) * 100
+                "date": snapshot.snapshot_date,
+                "equity": snapshot.total_equity,
+                "daily_return": snapshot.daily_return_pct,
+                "cumulative_return": snapshot.total_return_pct
             })
-        
+
         return {
             "data_points": data_points,
             "start_date": start_date,
@@ -301,24 +287,46 @@ class PortfolioAnalyticsService:
         
         # Calculate daily returns
         daily_returns = []
+        monthly_map = {}
+        weekly_map = {}
+
         for i in range(1, len(data_points)):
             prev_equity = data_points[i-1]["equity"]
             curr_equity = data_points[i]["equity"]
+            date = data_points[i]["date"]
+
             if prev_equity > 0:
-                ret = ((curr_equity - prev_equity) / prev_equity) * 100
-                daily_returns.append(ret)
+                ret = ((curr_equity - prev_equity) / prev_equity)
+                daily_returns.append(ret * 100)
+
+                # Monthly Aggregation
+                m_key = (date.year, date.month)
+                if m_key not in monthly_map:
+                    monthly_map[m_key] = 1.0
+                monthly_map[m_key] *= (1 + ret)
+
+                # Weekly Aggregation
+                iso_cal = date.isocalendar()
+                w_key = (iso_cal[0], iso_cal[1])
+                if w_key not in weekly_map:
+                    weekly_map[w_key] = 1.0
+                weekly_map[w_key] *= (1 + ret)
         
         positive_days = sum(1 for r in daily_returns if r > 0)
         negative_days = sum(1 for r in daily_returns if r < 0)
+
+        # Convert maps to lists (percentage)
+        monthly_returns = [(val - 1) * 100 for key, val in sorted(monthly_map.items())]
+        weekly_returns = [(val - 1) * 100 for key, val in sorted(weekly_map.items())]
         
         return {
             "daily_returns": daily_returns,
-            "weekly_returns": [],  # TODO: Implement weekly aggregation
-            "monthly_returns": [],  # TODO: Implement monthly aggregation
+            "weekly_returns": weekly_returns,
+            "monthly_returns": monthly_returns,
             "best_day": max(daily_returns) if daily_returns else 0.0,
             "worst_day": min(daily_returns) if daily_returns else 0.0,
-            "best_month": 0.0,  # TODO
-            "worst_month": 0.0,  # TODO
+            "best_month": max(monthly_returns) if monthly_returns else 0.0,
+            "worst_month": min(monthly_returns) if monthly_returns else 0.0,
             "positive_days": positive_days,
             "negative_days": negative_days,
             "avg_daily_return": sum(daily_returns) / len(daily_returns) if daily_returns else 0.0
