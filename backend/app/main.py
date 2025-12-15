@@ -66,7 +66,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
 
 # Production Security Features
-if not settings.is_development:
+if not settings.is_development and not settings.is_test:
     # HTTPS Redirection
     app.add_middleware(HTTPSRedirectMiddleware)
 
@@ -203,7 +203,7 @@ app.include_router(
 )
 app.include_router(
     watchlist.router,
-    prefix=f"{settings.API_V1_STR}/watchlist",
+    prefix=f"{settings.API_V1_STR}/watchlists",
     tags=["Watchlist & Alerts"]
 )
 
