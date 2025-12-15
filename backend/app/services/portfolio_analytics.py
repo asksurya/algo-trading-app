@@ -8,6 +8,7 @@ from sqlalchemy import select, and_, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.integrations.alpaca_client import AlpacaClient
+from app.models.portfolio import PortfolioSnapshot
 
 
 class PortfolioAnalyticsService:
@@ -51,47 +52,32 @@ class PortfolioAnalyticsService:
     async def get_equity_curve(self, user_id: str, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None) -> Dict:
         """
         Get equity curve data points for charting.
-        
-        Note: For now, this returns mock data. In production, this would:
-        1. Query portfolio_snapshots table
-        2. Calculate daily equity values
-        3. Return time series data
         """
-        # TODO: Replace with actual database query once models are deployed
-        # from app.models.portfolio import PortfolioSnapshot
-        # query = select(PortfolioSnapshot).where(
-        #     and_(
-        #         PortfolioSnapshot.user_id == user_id,
-        #         PortfolioSnapshot.snapshot_date >= start_date,
-        #         PortfolioSnapshot.snapshot_date <= end_date
-        #     )
-        # ).order_by(PortfolioSnapshot.snapshot_date)
-        # result = await self.session.execute(query)
-        # snapshots = result.scalars().all()
-        
         if not end_date:
             end_date = datetime.utcnow()
         if not start_date:
             start_date = end_date - timedelta(days=30)
+
+        query = select(PortfolioSnapshot).where(
+            and_(
+                PortfolioSnapshot.user_id == user_id,
+                PortfolioSnapshot.snapshot_date >= start_date,
+                PortfolioSnapshot.snapshot_date <= end_date
+            )
+        ).order_by(PortfolioSnapshot.snapshot_date)
         
-        # Placeholder implementation
-        account = await self.broker.get_account()
-        current_equity = float(account.get('equity', 100000))
+        result = await self.session.execute(query)
+        snapshots = result.scalars().all()
         
-        # Generate sample data points (replace with real data from DB)
         data_points = []
-        days = (end_date - start_date).days
-        for i in range(days + 1):
-            date = start_date + timedelta(days=i)
-            # Simple linear progression (replace with actual historical data)
-            equity = current_equity * (1 - 0.1 * ((days - i) / days))
+        for snapshot in snapshots:
             data_points.append({
-                "date": date,
-                "equity": equity,
-                "daily_return": 0.0,
-                "cumulative_return": ((equity / current_equity) - 1) * 100
+                "date": snapshot.snapshot_date,
+                "equity": snapshot.total_equity,
+                "daily_return": snapshot.daily_return_pct,
+                "cumulative_return": snapshot.total_return_pct
             })
-        
+
         return {
             "data_points": data_points,
             "start_date": start_date,
