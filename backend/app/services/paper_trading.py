@@ -2,9 +2,9 @@
 Paper trading service for simulated trading with virtual money.
 """
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, and_, delete
 from sqlalchemy.orm import selectinload
 
 from app.models.paper_trading import PaperAccount, PaperPosition, PaperTrade
@@ -19,65 +19,126 @@ class PaperTradingService:
     def __init__(self, session: AsyncSession):
         self.session = session
     
-    async def initialize_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict:
+    async def initialize_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict[str, Any]:
         """
         Initialize a paper trading account for a user.
-        
-        Args:
-            user_id: User ID
-            starting_balance: Initial virtual cash balance
-        
-        Returns:
-            Paper account details
         """
-        # Check if account exists
-        stmt = select(PaperAccount).where(PaperAccount.user_id == user_id).options(
-            selectinload(PaperAccount.positions),
-            selectinload(PaperAccount.trades)
+        # Check if account already exists
+        result = await self.session.execute(
+            select(PaperAccount)
+            .where(PaperAccount.user_id == user_id)
+            .options(selectinload(PaperAccount.positions), selectinload(PaperAccount.trades))
         )
-        result = await self.session.execute(stmt)
         account = result.scalar_one_or_none()
-
-        if not account:
-            account = PaperAccount(
-                user_id=user_id,
-                cash_balance=starting_balance,
-                initial_balance=starting_balance
-            )
-            self.session.add(account)
-            await self.session.commit()
-            await self.session.refresh(account)
         
-        return self._format_account(account)
-    
-    async def get_paper_account(self, user_id: str) -> Optional[Dict]:
-        """Get paper account details."""
-        stmt = select(PaperAccount).where(PaperAccount.user_id == user_id).options(
-            selectinload(PaperAccount.positions),
-            selectinload(PaperAccount.trades)
+        if account:
+            return self._format_account_sync(account)
+
+        # Create new account
+        account = PaperAccount(
+            user_id=user_id,
+            cash_balance=starting_balance,
+            initial_balance=starting_balance,
+            total_pnl=0.0,
+            total_return_pct=0.0
         )
-        result = await self.session.execute(stmt)
+        self.session.add(account)
+        await self.session.commit()
+
+        # After commit, the object is expired. We must not access attributes directly.
+        # We need to re-query to get the fresh state with relationships loaded.
+        return await self.get_paper_account(user_id)
+    
+    async def get_paper_account(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get paper account details."""
+        result = await self.session.execute(
+            select(PaperAccount)
+            .where(PaperAccount.user_id == user_id)
+            .options(selectinload(PaperAccount.positions), selectinload(PaperAccount.trades))
+        )
         account = result.scalar_one_or_none()
 
         if not account:
             return await self.initialize_paper_account(user_id)
 
-        return self._format_account(account)
+        return self._format_account_sync(account)
     
-    async def reset_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict:
+    def _format_account_sync(self, account: PaperAccount) -> Dict[str, Any]:
+        """
+        Format account object to dictionary.
+        Assumes account has relationships loaded and is not expired.
+        """
+        positions_dict = {}
+        # Iterate over eager-loaded collection
+        for pos in account.positions:
+            current_price = pos.avg_price # TODO: Fetch real time price
+            market_value = pos.qty * current_price
+            unrealized_pnl = market_value - (pos.qty * pos.avg_price)
+
+            positions_dict[pos.symbol] = {
+                'qty': pos.qty,
+                'avg_price': pos.avg_price,
+                'market_value': market_value,
+                'unrealized_pnl': unrealized_pnl
+            }
+
+        trades_list = [
+            {
+                "symbol": t.symbol,
+                "qty": t.qty,
+                "side": t.side,
+                "price": t.price,
+                "value": t.value,
+                "timestamp": t.timestamp
+            }
+            for t in account.trades
+        ]
+
+        return {
+            "user_id": account.user_id,
+            "cash_balance": account.cash_balance,
+            "initial_balance": account.initial_balance,
+            "positions": positions_dict,
+            "orders": [], # Keeping for compatibility
+            "trades": trades_list,
+            "created_at": account.created_at,
+            "total_pnl": account.total_pnl,
+            "total_return_pct": account.total_return_pct
+        }
+
+    async def reset_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict[str, Any]:
         """
         Reset paper account to initial state.
-        Clears all positions, orders, and trades.
         """
-        stmt = select(PaperAccount).where(PaperAccount.user_id == user_id)
-        result = await self.session.execute(stmt)
+        # Find account
+        result = await self.session.execute(
+            select(PaperAccount).where(PaperAccount.user_id == user_id)
+        )
         account = result.scalar_one_or_none()
 
         if account:
-            await self.session.delete(account)
+            account_id = account.id
+
+            # Delete associated positions and trades
+            await self.session.execute(
+                delete(PaperPosition).where(PaperPosition.account_id == account_id)
+            )
+            await self.session.execute(
+                delete(PaperTrade).where(PaperTrade.account_id == account_id)
+            )
+
+            # Reset account fields
+            account.cash_balance = starting_balance
+            account.initial_balance = starting_balance
+            account.total_pnl = 0.0
+            account.total_return_pct = 0.0
+
             await self.session.commit()
 
-        return await self.initialize_paper_account(user_id, starting_balance)
+            # Re-fetch fully
+            return await self.get_paper_account(user_id)
+        else:
+            return await self.initialize_paper_account(user_id, starting_balance)
     
     async def execute_paper_order(
         self,
@@ -87,103 +148,99 @@ class PaperTradingService:
         side: str,  # 'buy' or 'sell'
         order_type: str = 'market',
         limit_price: Optional[float] = None
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         """
-        Execute a simulated order in paper trading.
-        
-        Args:
-            user_id: User ID
-            symbol: Stock symbol
-            qty: Quantity
-            side: 'buy' or 'sell'
-            order_type: 'market', 'limit', etc.
-            limit_price: Price for limit orders
-        
-        Returns:
-            Order execution result
+        Execute a simulated order.
         """
-        stmt = select(PaperAccount).where(PaperAccount.user_id == user_id).options(
-            selectinload(PaperAccount.positions)
+        # 1. Fetch Account (Single Query)
+        result = await self.session.execute(
+            select(PaperAccount)
+            .where(PaperAccount.user_id == user_id)
+            .options(selectinload(PaperAccount.positions))
         )
-        result = await self.session.execute(stmt)
         account = result.scalar_one_or_none()
         
         if not account:
+            # Initialize returns a fresh dict, but we need the object for updates.
+            # So initialize then re-query.
             await self.initialize_paper_account(user_id)
-            # Re-fetch
-            result = await self.session.execute(stmt)
+            result = await self.session.execute(
+                select(PaperAccount)
+                .where(PaperAccount.user_id == user_id)
+                .options(selectinload(PaperAccount.positions))
+            )
             account = result.scalar_one()
-
-        # Get current market price (would call real broker API)
-        # For now, use placeholder price
-        current_price = limit_price if limit_price else 100.0  # Placeholder
         
-        # Calculate order value
+        # 2. Logic Check
+        current_price = limit_price if limit_price else 100.0  # Placeholder
         order_value = qty * current_price
         
-        # Validate order
+        # Capture initial state for response if failure
+        current_cash = account.cash_balance
+
         if side == 'buy':
-            if order_value > account.cash_balance:
+            if order_value > current_cash:
                 return {
                     "success": False,
                     "error": "Insufficient buying power",
                     "required": order_value,
-                    "available": account.cash_balance
+                    "available": current_cash
                 }
             
-            # Execute buy
             account.cash_balance -= order_value
-            
-            # Update or create position
-            # Find existing position for symbol
-            position = next((p for p in account.positions if p.symbol == symbol), None)
 
-            if position:
-                total_qty = position.qty + qty
-                total_cost = (position.qty * position.avg_price) + (qty * current_price)
+            # Update Position
+            # We already eager loaded positions, so we can check in memory
+            # OR query specific position. Querying is safer for concurrency usually,
+            # but here we are in a transaction.
+            
+            pos_result = await self.session.execute(
+                select(PaperPosition)
+                .where(and_(PaperPosition.account_id == account.id, PaperPosition.symbol == symbol))
+            )
+            pos = pos_result.scalar_one_or_none()
+
+            if pos:
+                total_qty = pos.qty + qty
+                total_cost = (pos.qty * pos.avg_price) + (qty * current_price)
                 avg_price = total_cost / total_qty
                 
-                position.qty = total_qty
-                position.avg_price = avg_price
-                position.market_value = total_qty * current_price
+                pos.qty = total_qty
+                pos.avg_price = avg_price
             else:
-                position = PaperPosition(
+                pos = PaperPosition(
                     account_id=account.id,
                     symbol=symbol,
                     qty=qty,
-                    avg_price=current_price,
-                    market_value=qty * current_price,
-                    unrealized_pnl=0.0
+                    avg_price=current_price
                 )
-                account.positions.append(position)
+                self.session.add(pos)
         
         elif side == 'sell':
-            position = next((p for p in account.positions if p.symbol == symbol), None)
+            pos_result = await self.session.execute(
+                select(PaperPosition)
+                .where(and_(PaperPosition.account_id == account.id, PaperPosition.symbol == symbol))
+            )
+            pos = pos_result.scalar_one_or_none()
 
-            if not position or position.qty < qty:
+            if not pos or pos.qty < qty:
                 return {
                     "success": False,
                     "error": "Insufficient shares to sell",
                     "requested": qty,
-                    "available": position.qty if position else 0
+                    "available": pos.qty if pos else 0
                 }
             
-            # Execute sell
-            realized_pnl = (current_price - position.avg_price) * qty
+            realized_pnl = (current_price - pos.avg_price) * qty
             account.cash_balance += order_value
-            account.total_pnl = (account.total_pnl or 0.0) + realized_pnl
+            account.total_pnl += realized_pnl
             
-            # Update position
-            position.qty -= qty
-            if position.qty == 0:
-                await self.session.delete(position)
-                # Remove from local list to reflect deletion
-                account.positions.remove(position)
-            else:
-                position.market_value = position.qty * current_price
+            pos.qty -= qty
+            if pos.qty <= 0:
+                await self.session.delete(pos)
 
-        
-        # Record trade
+        # 3. Create Trade Record
+        timestamp = datetime.utcnow()
         trade = PaperTrade(
             account_id=account.id,
             symbol=symbol,
@@ -191,60 +248,114 @@ class PaperTradingService:
             side=side,
             price=current_price,
             value=order_value,
-            timestamp=datetime.utcnow()
+            timestamp=timestamp
         )
         self.session.add(trade)
-        
-        # Calculate total return
-        positions_value = sum(
-            p.qty * current_price for p in account.positions
+
+        # 4. Commit Transaction
+        await self.session.commit()
+
+        # 5. Re-query for Final State Calculation
+        # We need the fresh list of positions to calculate total equity.
+        # Everything is expired now, so we MUST start a new query.
+
+        # To be safe, let's use user_id which we have from args
+        result_final = await self.session.execute(
+             select(PaperAccount)
+            .where(PaperAccount.user_id == user_id)
+            .options(selectinload(PaperAccount.positions))
         )
-        total_equity = account.cash_balance + positions_value
-        account.total_return_pct = ((total_equity / account.initial_balance) - 1) * 100
+        account_final = result_final.scalar_one()
+
+        # Calculate Totals from Fresh Data
+        positions_value = sum(p.qty * current_price for p in account_final.positions)
+        total_equity = account_final.cash_balance + positions_value
+
+        if account_final.initial_balance > 0:
+            account_final.total_return_pct = ((total_equity / account_final.initial_balance) - 1) * 100
+        
+        # We need to save this calculated metric back to DB?
+        # The previous code did update `account.total_return_pct`.
+        # So we should commit again.
+        await self.session.commit()
+
+        # 6. Construct Response
+        trade_dict = {
+            "symbol": symbol,
+            "qty": qty,
+            "side": side,
+            "price": current_price,
+            "value": order_value,
+            "timestamp": timestamp
+        }
+        
+        # Access attributes safely by using local variables or re-querying if needed.
+        # But wait, account_final is still attached to session and session was committed above.
+        # So accessing attributes triggers refresh which fails in async without explicit await refresh.
+
+        # Let's refresh explicitly
+        await self.session.refresh(account_final)
         
         await self.session.commit()
         await self.session.refresh(account)
 
         return {
             "success": True,
-            "trade": {
-                "symbol": trade.symbol,
-                "qty": trade.qty,
-                "side": trade.side,
-                "price": trade.price,
-                "value": trade.value,
-                "timestamp": trade.timestamp
-            },
+            "trade": trade_dict,
             "account": {
-                "cash_balance": account.cash_balance,
+                "cash_balance": account_final.cash_balance,
                 "total_equity": total_equity,
-                "total_pnl": account.total_pnl,
-                "total_return_pct": account.total_return_pct
+                "total_pnl": account_final.total_pnl,
+                "total_return_pct": account_final.total_return_pct
             }
         }
     
-    async def get_paper_positions(self, user_id: str) -> List[Dict]:
+    async def get_paper_positions(self, user_id: str) -> List[Dict[str, Any]]:
         """Get all paper trading positions."""
-        stmt = select(PaperPosition).join(PaperAccount).where(PaperAccount.user_id == user_id)
-        result = await self.session.execute(stmt)
-        positions = result.scalars().all()
+        account_dict = await self.get_paper_account(user_id)
+        if not account_dict:
+            return []
+        positions = account_dict.get('positions', {})
 
         return [
-            {
-                "symbol": pos.symbol,
-                "qty": pos.qty,
-                "avg_price": pos.avg_price,
-                "market_value": pos.market_value,
-                "unrealized_pnl": pos.unrealized_pnl
-            }
-            for pos in positions
+            {"symbol": symbol, **details}
+            for symbol, details in positions.items()
         ]
     
-    async def get_paper_trade_history(self, user_id: str, limit: int = 100) -> List[Dict]:
+    async def get_paper_trade_history(self, user_id: str, limit: int = 100) -> List[Dict[str, Any]]:
         """Get paper trading trade history."""
-        stmt = select(PaperTrade).join(PaperAccount).where(
-            PaperAccount.user_id == user_id
-        ).order_by(desc(PaperTrade.timestamp)).limit(limit)
+        # Get account ID first
+        result = await self.session.execute(
+            select(PaperAccount.id).where(PaperAccount.user_id == user_id)
+        )
+        account_id = result.scalar_one_or_none()
+
+        if not account_id:
+            return []
+
+        trades_result = await self.session.execute(
+            select(PaperTrade)
+            .where(PaperTrade.account_id == account_id)
+            .order_by(PaperTrade.timestamp.desc())
+            .limit(limit)
+        )
+
+        trades = trades_result.scalars().all()
+
+        # Convert to dict and reverse for chronological order
+        trades_list = [
+            {
+                "symbol": t.symbol,
+                "qty": t.qty,
+                "side": t.side,
+                "price": t.price,
+                "value": t.value,
+                "timestamp": t.timestamp
+            }
+            for t in reversed(trades)
+        ]
+
+        return trades_list
 
         result = await self.session.execute(stmt)
         trades = result.scalars().all()
@@ -301,4 +412,8 @@ class PaperTradingService:
 
 async def get_paper_trading_service(session: AsyncSession = None) -> PaperTradingService:
     """Get paper trading service instance."""
-    return PaperTradingService(session)
+    if session:
+        return PaperTradingService(session)
+
+    global _paper_trading_service
+    return _paper_trading_service
