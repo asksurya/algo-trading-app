@@ -210,3 +210,47 @@ class PerformancePeriod(str, enum.Enum):
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
     ALL_TIME = "all_time"
+
+
+# ============================================================================
+# Audit & Compliance Enums
+# ============================================================================
+
+class AuditEventType(str, enum.Enum):
+    """Types of audit events."""
+    # Authentication events
+    LOGIN = "login"
+    LOGOUT = "logout"
+    LOGIN_FAILED = "login_failed"
+    PASSWORD_CHANGE = "password_change"
+
+    # Trading events
+    ORDER_PLACED = "order_placed"
+    ORDER_CANCELED = "order_canceled"
+    ORDER_FILLED = "order_filled"
+    ORDER_REJECTED = "order_rejected"
+    POSITION_OPENED = "position_opened"
+    POSITION_CLOSED = "position_closed"
+
+    # Strategy events
+    STRATEGY_CREATED = "strategy_created"
+    STRATEGY_UPDATED = "strategy_updated"
+    STRATEGY_DELETED = "strategy_deleted"
+    STRATEGY_ACTIVATED = "strategy_activated"
+    STRATEGY_DEACTIVATED = "strategy_deactivated"
+    BACKTEST_RUN = "backtest_run"
+
+    # Risk events
+    RISK_RULE_TRIGGERED = "risk_rule_triggered"
+    RISK_LIMIT_EXCEEDED = "risk_limit_exceeded"
+    MARGIN_CALL = "margin_call"
+
+    # Configuration events
+    SETTINGS_CHANGED = "settings_changed"
+    API_KEY_CREATED = "api_key_created"
+    API_KEY_DELETED = "api_key_deleted"
+
+    # Access events
+    API_ACCESS = "api_access"
+    UNAUTHORIZED_ACCESS = "unauthorized_access"
+    PERMISSION_DENIED = "permission_denied"
