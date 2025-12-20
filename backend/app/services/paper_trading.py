@@ -8,6 +8,7 @@ from sqlalchemy import select, and_, delete
 from sqlalchemy.orm import selectinload
 
 from app.models.paper_trading import PaperAccount, PaperPosition, PaperTrade
+from app.integrations.market_data import get_market_data_service
 
 
 class PaperTradingService:
@@ -18,6 +19,7 @@ class PaperTradingService:
     
     def __init__(self, session: AsyncSession):
         self.session = session
+        self.market_data = get_market_data_service()
     
     async def initialize_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict[str, Any]:
         """
@@ -32,7 +34,7 @@ class PaperTradingService:
         account = result.scalar_one_or_none()
         
         if account:
-            return self._format_account_sync(account)
+            return await self._format_account_async(account)
 
         # Create new account
         account = PaperAccount(
@@ -61,23 +63,40 @@ class PaperTradingService:
         if not account:
             return await self.initialize_paper_account(user_id)
 
-        return self._format_account_sync(account)
+        return await self._format_account_async(account)
     
-    def _format_account_sync(self, account: PaperAccount) -> Dict[str, Any]:
+    async def _format_account_async(self, account: PaperAccount) -> Dict[str, Any]:
         """
-        Format account object to dictionary.
+        Format account object to dictionary using real-time prices.
         Assumes account has relationships loaded and is not expired.
         """
         positions_dict = {}
+        symbols = [pos.symbol for pos in account.positions]
+
+        # Fetch real-time prices if there are positions
+        current_prices = {}
+        if symbols:
+            try:
+                trades_data = await self.market_data.get_multi_trades(symbols)
+                for trade in trades_data:
+                    current_prices[trade["symbol"]] = trade["price"]
+            except Exception as e:
+                # Log error and fallback to avg_price will happen below
+                # Assuming logging is configured
+                print(f"Error fetching prices: {e}")
+
         # Iterate over eager-loaded collection
         for pos in account.positions:
-            current_price = pos.avg_price # TODO: Fetch real time price
+            # Use real-time price if available, otherwise fallback to avg_price
+            current_price = current_prices.get(pos.symbol, pos.avg_price)
+
             market_value = pos.qty * current_price
             unrealized_pnl = market_value - (pos.qty * pos.avg_price)
 
             positions_dict[pos.symbol] = {
                 'qty': pos.qty,
                 'avg_price': pos.avg_price,
+                'current_price': current_price,
                 'market_value': market_value,
                 'unrealized_pnl': unrealized_pnl
             }
@@ -94,16 +113,27 @@ class PaperTradingService:
             for t in account.trades
         ]
 
+        # Calculate total equity using current market values
+        total_positions_value = sum(p['market_value'] for p in positions_dict.values())
+        total_equity = account.cash_balance + total_positions_value
+
+        # Recalculate total return based on current equity
+        total_return_pct = 0.0
+        if account.initial_balance > 0:
+            total_return_pct = ((total_equity / account.initial_balance) - 1) * 100
+
         return {
             "user_id": account.user_id,
             "cash_balance": account.cash_balance,
             "initial_balance": account.initial_balance,
+            "total_equity": total_equity,
             "positions": positions_dict,
             "orders": [], # Keeping for compatibility
             "trades": trades_list,
             "created_at": account.created_at,
-            "total_pnl": account.total_pnl,
-            "total_return_pct": account.total_return_pct
+            "total_pnl": account.total_pnl, # Realized PnL
+            "unrealized_pnl": total_positions_value - sum(p['qty'] * p['avg_price'] for p in positions_dict.values()),
+            "total_return_pct": total_return_pct
         }
 
     async def reset_paper_account(self, user_id: str, starting_balance: float = 100000.0) -> Dict[str, Any]:
@@ -172,7 +202,21 @@ class PaperTradingService:
             account = result.scalar_one()
         
         # 2. Logic Check
-        current_price = limit_price if limit_price else 100.0  # Placeholder
+        # For market orders, we should really fetch current price here too!
+        if limit_price:
+            current_price = limit_price
+        else:
+             # Fetch real time price for execution
+            try:
+                trade_data = await self.market_data.get_latest_trade(symbol)
+                current_price = trade_data['price']
+            except Exception as e:
+                # In production, this should fail if price is unavailable
+                return {
+                    "success": False,
+                    "error": f"Failed to fetch market price for {symbol}: {str(e)}"
+                }
+
         order_value = qty * current_price
         
         # Capture initial state for response if failure
@@ -268,18 +312,20 @@ class PaperTradingService:
         account_final = result_final.scalar_one()
 
         # Calculate Totals from Fresh Data
-        positions_value = sum(p.qty * current_price for p in account_final.positions)
-        total_equity = account_final.cash_balance + positions_value
-
-        if account_final.initial_balance > 0:
-            account_final.total_return_pct = ((total_equity / account_final.initial_balance) - 1) * 100
+        # Re-fetch prices if needed, or re-use execution price?
+        # For simplicity and consistency, let's just reuse the logic from _format_account_async
+        # which fetches fresh prices for all positions. This is slightly inefficient (fetching same symbol twice),
+        # but ensures total equity is accurate across portfolio.
         
-        # We need to save this calculated metric back to DB?
-        # The previous code did update `account.total_return_pct`.
-        # So we should commit again.
-        await self.session.commit()
+        # However, _format_account_async is async and we need to await it.
+        # Also, we might want to avoid extra API calls.
+        # But `account_final.positions` includes other symbols too.
 
-        # 6. Construct Response
+        # Since we just executed a trade, returning the updated account via _format_account_async is the best way.
+
+        formatted_account = await self._format_account_async(account_final)
+
+        # We still need to construct the trade dict to return along with account
         trade_dict = {
             "symbol": symbol,
             "qty": qty,
@@ -288,26 +334,11 @@ class PaperTradingService:
             "value": order_value,
             "timestamp": timestamp
         }
-        
-        # Access attributes safely by using local variables or re-querying if needed.
-        # But wait, account_final is still attached to session and session was committed above.
-        # So accessing attributes triggers refresh which fails in async without explicit await refresh.
-
-        # Let's refresh explicitly
-        await self.session.refresh(account_final)
-        
-        await self.session.commit()
-        await self.session.refresh(account)
 
         return {
             "success": True,
             "trade": trade_dict,
-            "account": {
-                "cash_balance": account_final.cash_balance,
-                "total_equity": total_equity,
-                "total_pnl": account_final.total_pnl,
-                "total_return_pct": account_final.total_return_pct
-            }
+            "account": formatted_account
         }
     
     async def get_paper_positions(self, user_id: str) -> List[Dict[str, Any]]:
