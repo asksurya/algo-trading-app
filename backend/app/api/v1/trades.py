@@ -20,6 +20,7 @@ from app.schemas.trade import (
 )
 from app.dependencies import get_current_active_user
 from app.integrations.alpaca_client import get_alpaca_client, AlpacaAPIError
+from app.integrations.order_execution import get_order_executor, OrderExecutionError
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,10 +91,49 @@ async def create_trade(
     await db.commit()
     await db.refresh(new_trade)
     
-    # TODO: In production, this would:
-    # 1. Send order to Alpaca API
-    # 2. Update order_id with broker's order ID
-    # 3. Use background task/webhook to update status
+    # Execute order via Alpaca
+    try:
+        executor = get_order_executor()
+        executor.set_db_session(db)
+
+        # Determine order type and side
+        side = "buy" if trade_data.trade_type == TradeType.BUY else "sell"
+        order_type = "limit" if trade_data.price else "market"
+
+        # Place order
+        order = await executor.place_order(
+            symbol=new_trade.ticker,
+            qty=float(new_trade.quantity),
+            side=side,
+            order_type=order_type,
+            limit_price=float(new_trade.price) if new_trade.price else None,
+            user_id=current_user.id,
+            strategy_id=trade_data.strategy_id
+        )
+
+        # Update trade with broker order ID
+        new_trade.order_id = order.get("id")
+
+        # Map Alpaca status to TradeStatus if possible
+        alpaca_status = order.get("status")
+        if alpaca_status == "filled":
+            new_trade.status = TradeStatus.FILLED
+            new_trade.filled_quantity = Decimal(str(order.get("filled_qty", 0)))
+            if order.get("filled_avg_price"):
+                new_trade.filled_avg_price = Decimal(str(order.get("filled_avg_price")))
+
+        await db.commit()
+        await db.refresh(new_trade)
+
+    except OrderExecutionError as e:
+        logger.error(f"Order execution failed for trade {new_trade.id}: {e}")
+        new_trade.status = TradeStatus.REJECTED
+        await db.commit()
+        # We return the trade with REJECTED status so the client knows it failed
+    except Exception as e:
+        logger.error(f"Unexpected error executing trade {new_trade.id}: {e}")
+        new_trade.status = TradeStatus.REJECTED
+        await db.commit()
     
     return new_trade
 
