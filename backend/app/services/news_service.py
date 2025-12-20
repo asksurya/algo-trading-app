@@ -66,20 +66,65 @@ class NewsService:
         Returns:
             List of news articles related to the symbol
         """
-        # TODO: Implement symbol-specific news fetching
-        mock_news = [
-            {
-                "id": f"{symbol}_1",
-                "title": f"{symbol} Announces New Product Launch",
-                "summary": f"{symbol} unveiled its latest product at a press event...",
-                "source": "TechCrunch",
-                "url": f"https://example.com/news/{symbol}/1",
-                "published_at": datetime.utcnow() - timedelta(hours=1),
-                "sentiment": "positive",
-                "tickers": [symbol]
-            }
-        ]
-        return mock_news[:limit]
+        if not self.alpha_vantage_key:
+            return []
+
+        url = "https://www.alphavantage.co/query"
+        params = {
+            "function": "NEWS_SENTIMENT",
+            "tickers": symbol,
+            "apikey": self.alpha_vantage_key,
+            "limit": str(limit)
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params) as response:
+                    if response.status != 200:
+                        return []
+
+                    data = await response.json()
+                    feed = data.get("feed", [])
+
+                    news_items = []
+                    for item in feed:
+                        # Parse published_at
+                        published_at = datetime.utcnow()
+                        if "time_published" in item:
+                            try:
+                                # Format: YYYYMMDDTHHMMSS
+                                published_at = datetime.strptime(item["time_published"], "%Y%m%dT%H%M%S")
+                            except ValueError:
+                                pass
+
+                        # Map sentiment
+                        sentiment_label = item.get("overall_sentiment_label", "Neutral")
+                        sentiment = "neutral"
+                        if "Bullish" in sentiment_label:
+                            sentiment = "positive"
+                        elif "Bearish" in sentiment_label:
+                            sentiment = "negative"
+
+                        # Extract tickers mentioned
+                        tickers = []
+                        if "ticker_sentiment" in item:
+                            tickers = [t.get("ticker") for t in item["ticker_sentiment"]]
+
+                        news_items.append({
+                            "id": f"{symbol}_{len(news_items)}",
+                            "title": item.get("title", ""),
+                            "summary": item.get("summary", ""),
+                            "source": item.get("source", ""),
+                            "url": item.get("url", ""),
+                            "published_at": published_at,
+                            "sentiment": sentiment,
+                            "tickers": tickers
+                        })
+
+                    return news_items[:limit]
+        except Exception as e:
+            # Log error if logging was available, for now just return empty
+            return []
     
     async def analyze_sentiment(self, text: str) -> str:
         """
