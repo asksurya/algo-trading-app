@@ -2,12 +2,15 @@
 News service for aggregating market news from various sources.
 """
 from datetime import datetime, timedelta
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import aiohttp
 import asyncio
 import os
+import logging
 from textblob import TextBlob
+from app.core.config import settings
 
+logger = logging.getLogger(__name__)
 
 class NewsService:
     """
@@ -15,10 +18,110 @@ class NewsService:
     Supports multiple news sources.
     """
     
+    BASE_URL = "https://www.alphavantage.co/query"
+
     def __init__(self):
-        self.alpha_vantage_key = os.getenv("ALPHA_VANTAGE_API_KEY")
+        self.alpha_vantage_key = settings.ALPHA_VANTAGE_API_KEY or os.getenv("ALPHA_VANTAGE_API_KEY")
         self.news_api_key = os.getenv("NEWS_API_KEY")
+
+        if not self.alpha_vantage_key:
+            logger.warning("ALPHA_VANTAGE_API_KEY not set. News service may not function correctly.")
     
+    async def _fetch_news(self, params: Dict[str, str]) -> List[Dict]:
+        """
+        Fetch news from Alpha Vantage API.
+
+        Args:
+            params: Query parameters for the API call
+
+        Returns:
+            List of parsed news articles
+        """
+        if not self.alpha_vantage_key:
+            logger.error("Alpha Vantage API key missing")
+            return []
+
+        default_params = {
+            "function": "NEWS_SENTIMENT",
+            "apikey": self.alpha_vantage_key,
+            "sort": "LATEST"
+        }
+        query_params = {**default_params, **params}
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(self.BASE_URL, params=query_params) as response:
+                    if response.status != 200:
+                        logger.error(f"Error fetching news: {response.status}")
+                        return []
+
+                    data = await response.json()
+
+                    if "feed" not in data:
+                        if "Note" in data: # API limit reached
+                            logger.warning(f"Alpha Vantage API limit reached: {data['Note']}")
+                        elif "Error Message" in data:
+                            logger.error(f"Alpha Vantage API error: {data['Error Message']}")
+                        return []
+
+                    return self._parse_av_news(data["feed"])
+        except Exception as e:
+            logger.error(f"Exception fetching news: {str(e)}")
+            return []
+
+    def _parse_av_news(self, feed: List[Dict[str, Any]]) -> List[Dict]:
+        """
+        Parse Alpha Vantage news feed into application format.
+
+        Args:
+            feed: List of news items from Alpha Vantage
+
+        Returns:
+            List of parsed news articles
+        """
+        parsed_news = []
+
+        for item in feed:
+            try:
+                # Parse date: "20230101T123000" -> datetime
+                time_published_str = item.get("time_published", "")
+                published_at = datetime.utcnow()
+                if time_published_str:
+                    try:
+                        published_at = datetime.strptime(time_published_str, "%Y%m%dT%H%M%S")
+                    except ValueError:
+                        pass
+
+                # Extract tickers
+                tickers = []
+                if "ticker_sentiment" in item:
+                    tickers = [t["ticker"] for t in item["ticker_sentiment"]]
+
+                # Map sentiment
+                sentiment_label = item.get("overall_sentiment_label", "Neutral")
+                sentiment = "neutral"
+                if "Bullish" in sentiment_label:
+                    sentiment = "positive"
+                elif "Bearish" in sentiment_label:
+                    sentiment = "negative"
+
+                parsed_news.append({
+                    "id": item.get("url", ""), # Use URL as ID
+                    "title": item.get("title", ""),
+                    "summary": item.get("summary", ""),
+                    "source": item.get("source", ""),
+                    "url": item.get("url", ""),
+                    "published_at": published_at,
+                    "sentiment": sentiment,
+                    "tickers": tickers,
+                    "image_url": item.get("banner_image", "")
+                })
+            except Exception as e:
+                logger.warning(f"Error parsing news item: {e}")
+                continue
+
+        return parsed_news
+
     async def get_market_news(self, limit: int = 20) -> List[Dict]:
         """
         Get general market news.
@@ -29,31 +132,10 @@ class NewsService:
         Returns:
             List of news articles
         """
-        # TODO: Implement Alpha Vantage News API integration
-        # For now, return mock data
-        mock_news = [
-            {
-                "id": "1",
-                "title": "Fed Holds Interest Rates Steady",
-                "summary": "The Federal Reserve announced it will maintain current interest rate levels...",
-                "source": "Reuters",
-                "url": "https://example.com/news/1",
-                "published_at": datetime.utcnow() - timedelta(hours=2),
-                "sentiment": "neutral",
-                "tickers": ["SPY", "QQQ"]
-            },
-            {
-                "id": "2",
-                "title": "Tech Stocks Rally on Earnings Beat",
-                "summary": "Major technology companies exceeded earnings expectations...",
-                "source": "Bloomberg",
-                "url": "https://example.com/news/2",
-                "published_at": datetime.utcnow() - timedelta(hours=5),
-                "sentiment": "positive",
-                "tickers": ["AAPL", "MSFT", "GOOGL"]
-            }
-        ]
-        return mock_news[:limit]
+        # Fetch news with general financial topics
+        # topics=financial_markets is a good default for general news
+        news = await self._fetch_news({"topics": "financial_markets", "limit": str(limit)})
+        return news[:limit]
     
     async def get_symbol_news(self, symbol: str, limit: int = 10) -> List[Dict]:
         """
@@ -66,20 +148,8 @@ class NewsService:
         Returns:
             List of news articles related to the symbol
         """
-        # TODO: Implement symbol-specific news fetching
-        mock_news = [
-            {
-                "id": f"{symbol}_1",
-                "title": f"{symbol} Announces New Product Launch",
-                "summary": f"{symbol} unveiled its latest product at a press event...",
-                "source": "TechCrunch",
-                "url": f"https://example.com/news/{symbol}/1",
-                "published_at": datetime.utcnow() - timedelta(hours=1),
-                "sentiment": "positive",
-                "tickers": [symbol]
-            }
-        ]
-        return mock_news[:limit]
+        news = await self._fetch_news({"tickers": symbol, "limit": str(limit)})
+        return news[:limit]
     
     async def analyze_sentiment(self, text: str) -> str:
         """

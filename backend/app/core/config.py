@@ -76,6 +76,12 @@ class Settings(BaseSettings):
         default="https://paper-api.alpaca.markets",
         description="Alpaca API base URL"
     )
+
+    # Alpha Vantage
+    ALPHA_VANTAGE_API_KEY: Optional[str] = Field(
+        default=None,
+        description="Alpha Vantage API key for news and sentiment"
+    )
     
     # Email (Optional)
     SMTP_HOST: Optional[str] = Field(default=None)
