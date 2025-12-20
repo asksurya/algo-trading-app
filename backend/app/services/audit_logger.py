@@ -2,52 +2,15 @@
 Audit logging service for compliance and security.
 """
 from datetime import datetime
-from typing import Dict, Optional, Any
-from enum import Enum
+from typing import Dict, Optional, Any, List
 import json
 import logging
 
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-class AuditEventType(str, Enum):
-    """Types of audit events."""
-    # Authentication events
-    LOGIN = "login"
-    LOGOUT = "logout"
-    LOGIN_FAILED = "login_failed"
-    PASSWORD_CHANGE = "password_change"
-    
-    # Trading events
-    ORDER_PLACED = "order_placed"
-    ORDER_CANCELED = "order_canceled"
-    ORDER_FILLED = "order_filled"
-    ORDER_REJECTED = "order_rejected"
-    POSITION_OPENED = "position_opened"
-    POSITION_CLOSED = "position_closed"
-    
-    # Strategy events
-    STRATEGY_CREATED = "strategy_created"
-    STRATEGY_UPDATED = "strategy_updated"
-    STRATEGY_DELETED = "strategy_deleted"
-    STRATEGY_ACTIVATED = "strategy_activated"
-    STRATEGY_DEACTIVATED = "strategy_deactivated"
-    BACKTEST_RUN = "backtest_run"
-    
-    # Risk events
-    RISK_RULE_TRIGGERED = "risk_rule_triggered"
-    RISK_LIMIT_EXCEEDED = "risk_limit_exceeded"
-    MARGIN_CALL = "margin_call"
-    
-    # Configuration events
-    SETTINGS_CHANGED = "settings_changed"
-    API_KEY_CREATED = "api_key_created"
-    API_KEY_DELETED = "api_key_deleted"
-    
-    # Access events
-    API_ACCESS = "api_access"
-    UNAUTHORIZED_ACCESS = "unauthorized_access"
-    PERMISSION_DENIED = "permission_denied"
+from app.models.enums import AuditEventType
+from app.models.audit_log import AuditLog
 
 
 class AuditLogger:
@@ -84,27 +47,22 @@ class AuditLogger:
         Returns:
             Audit log entry
         """
-        timestamp = datetime.utcnow()
-        
         # Create audit log entry
-        audit_entry = {
-            "timestamp": timestamp,
-            "user_id": user_id,
-            "event_type": event_type.value,
-            "description": description,
-            "metadata": metadata or {},
-            "ip_address": ip_address,
-            "user_agent": user_agent,
-            "severity": severity
-        }
+        log_entry = AuditLog(
+            user_id=user_id,
+            event_type=event_type,
+            description=description,
+            metadata_data=metadata or {},
+            ip_address=ip_address,
+            user_agent=user_agent,
+            severity=severity
+        )
         
-        # TODO: Store in database once audit_log model is deployed
-        # from app.models.audit_log import AuditLog
-        # log_entry = AuditLog(**audit_entry)
-        # self.session.add(log_entry)
-        # await self.session.commit()
+        self.session.add(log_entry)
+        await self.session.commit()
+        await self.session.refresh(log_entry)
         
-        # For now, log to application logs
+        # For now, log to application logs as well
         log_message = f"[AUDIT] {event_type.value} | User: {user_id} | {description}"
         if metadata:
             log_message += f" | Metadata: {json.dumps(metadata)}"
@@ -117,8 +75,18 @@ class AuditLogger:
             self.logger.warning(log_message)
         else:
             self.logger.info(log_message)
-        
-        return audit_entry
+
+        return {
+            "id": log_entry.id,
+            "timestamp": log_entry.created_at,
+            "user_id": log_entry.user_id,
+            "event_type": log_entry.event_type.value,
+            "description": log_entry.description,
+            "metadata": log_entry.metadata_data,
+            "ip_address": log_entry.ip_address,
+            "user_agent": log_entry.user_agent,
+            "severity": log_entry.severity
+        }
     
     async def log_trade(self, user_id: str, trade_data: Dict) -> Dict:
         """Log a trade execution for audit trail."""
@@ -168,7 +136,7 @@ class AuditLogger:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
         limit: int = 100
-    ) -> list:
+    ) -> List[AuditLog]:
         """
         Query audit trail with filters.
         
@@ -182,9 +150,25 @@ class AuditLogger:
         Returns:
             List of audit log entries
         """
-        # TODO: Implement database query once models are deployed
-        # For now, return empty list
-        return []
+        query = select(AuditLog)
+
+        filters = []
+        if user_id:
+            filters.append(AuditLog.user_id == user_id)
+        if event_type:
+            filters.append(AuditLog.event_type == event_type)
+        if start_date:
+            filters.append(AuditLog.created_at >= start_date)
+        if end_date:
+            filters.append(AuditLog.created_at <= end_date)
+
+        if filters:
+            query = query.where(and_(*filters))
+
+        query = query.order_by(AuditLog.created_at.desc()).limit(limit)
+
+        result = await self.session.execute(query)
+        return result.scalars().all()
     
     async def generate_compliance_report(
         self,
@@ -201,18 +185,96 @@ class AuditLogger:
         - Risk events
         - Configuration changes
         """
-        # TODO: Implement once audit log queries are available
+        # Query all events for the user in the date range
+        query = select(AuditLog).where(
+            and_(
+                AuditLog.user_id == user_id,
+                AuditLog.created_at >= start_date,
+                AuditLog.created_at <= end_date
+            )
+        ).order_by(AuditLog.created_at.asc())
+
+        result = await self.session.execute(query)
+        logs = result.scalars().all()
+
+        # Categorize events
+        trades = []
+        orders = []
+        risk_events = []
+        security_events = []
+        config_changes = []
+        other_events = []
+
+        for log in logs:
+            event_data = {
+                "timestamp": log.created_at,
+                "event_type": log.event_type.value,
+                "description": log.description,
+                "metadata": log.metadata_data,
+                "ip_address": log.ip_address,
+                "severity": log.severity
+            }
+
+            # Map event types to categories
+            if log.event_type in [
+                AuditEventType.ORDER_FILLED,
+                AuditEventType.POSITION_OPENED,
+                AuditEventType.POSITION_CLOSED
+            ]:
+                trades.append(event_data)
+            elif log.event_type in [
+                AuditEventType.ORDER_PLACED,
+                AuditEventType.ORDER_CANCELED,
+                AuditEventType.ORDER_REJECTED
+            ]:
+                orders.append(event_data)
+            elif log.event_type in [
+                AuditEventType.RISK_RULE_TRIGGERED,
+                AuditEventType.RISK_LIMIT_EXCEEDED,
+                AuditEventType.MARGIN_CALL
+            ]:
+                risk_events.append(event_data)
+            elif log.event_type in [
+                AuditEventType.LOGIN,
+                AuditEventType.LOGOUT,
+                AuditEventType.LOGIN_FAILED,
+                AuditEventType.PASSWORD_CHANGE,
+                AuditEventType.API_ACCESS,
+                AuditEventType.UNAUTHORIZED_ACCESS,
+                AuditEventType.PERMISSION_DENIED
+            ]:
+                security_events.append(event_data)
+            elif log.event_type in [
+                AuditEventType.SETTINGS_CHANGED,
+                AuditEventType.API_KEY_CREATED,
+                AuditEventType.API_KEY_DELETED
+            ]:
+                config_changes.append(event_data)
+            else:
+                other_events.append(event_data)
+
         return {
             "user_id": user_id,
             "report_period": {
                 "start": start_date,
                 "end": end_date
             },
-            "total_trades": 0,
-            "total_orders": 0,
-            "risk_events": 0,
-            "security_events": 0,
-            "events": []
+            "summary": {
+                "total_trades": len(trades),
+                "total_orders": len(orders),
+                "risk_events": len(risk_events),
+                "security_events": len(security_events),
+                "config_changes": len(config_changes),
+                "total_events": len(logs)
+            },
+            "details": {
+                "trades": trades,
+                "orders": orders,
+                "risk_events": risk_events,
+                "security_events": security_events,
+                "configuration_changes": config_changes,
+                "other_events": other_events
+            }
         }
 
 
