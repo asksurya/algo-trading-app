@@ -1,7 +1,9 @@
 """
 Stock screener service for finding stocks based on criteria.
 """
+import asyncio
 from typing import List, Dict, Optional
+import yfinance as yf
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -116,7 +118,7 @@ class ScreenerService:
         if max_price:
             results = [r for r in results if r["price"] <= max_price]
         if sectors:
-            results = [r for r in r esults if r["sector"] in sectors]
+            results = [r for r in results if r["sector"] in sectors]
         if exchanges:
             results = [r for r in results if r["exchange"] in exchanges]
         
@@ -134,8 +136,47 @@ class ScreenerService:
     
     async def get_most_active(self, limit: int = 10) -> List[Dict]:
         """Get most actively traded stocks by volume."""
-        # TODO: Implement with real market data
-        return []
+        try:
+            # Run blocking yfinance call in a separate thread
+            data = await asyncio.to_thread(yf.screen, "most_actives")
+            quotes = data.get('quotes', [])
+
+            # Map results to standardized format
+            results = []
+            for q in quotes[:limit]:
+                stock = {
+                    "symbol": q.get('symbol'),
+                    "name": q.get('shortName') or q.get('longName'),
+                    "price": q.get('regularMarketPrice'),
+                    "market_cap": q.get('marketCap'),
+                    "pe_ratio": q.get('trailingPE'),
+                    "dividend_yield": q.get('dividendYield'),
+                    "volume": q.get('regularMarketVolume'),
+                    "exchange": q.get('exchange'),
+                    "sector": None  # Will be populated if limit is small
+                }
+                results.append(stock)
+
+            # Enrich with sector data if limit is small (<= 20)
+            # This is done because yf.screen doesn't provide sector info
+            if limit <= 20 and results:
+                async def _get_sector(stock_dict):
+                    try:
+                        ticker = yf.Ticker(stock_dict['symbol'])
+                        # Accessing .info triggers a network request, so run in thread
+                        info = await asyncio.to_thread(lambda: ticker.info)
+                        stock_dict['sector'] = info.get('sector')
+                    except Exception:
+                        pass # Leave as None if fetch fails
+
+                await asyncio.gather(*[_get_sector(r) for r in results])
+
+            return results
+
+        except Exception as e:
+            # In a real app we would log this error
+            print(f"Error fetching most active stocks: {e}")
+            return []
 
 
 async def get_screener_service(session: AsyncSession) -> ScreenerService:

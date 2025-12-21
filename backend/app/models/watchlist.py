@@ -33,7 +33,7 @@ class Watchlist(Base, TimestampMixin):
     description: Mapped[Optional[str]] = mapped_column(String(500))
 
     # Relationships
-    user = relationship("User", back_populates="watchlists")
+    user = relationship("User")
     items: Mapped[List["WatchlistItem"]] = relationship(
         "WatchlistItem",
         back_populates="watchlist",
@@ -91,4 +91,4 @@ class PriceAlert(Base, TimestampMixin):
     triggered_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
 
     # Relationships
-    user = relationship("User", back_populates="price_alerts")
+    user = relationship("User")
