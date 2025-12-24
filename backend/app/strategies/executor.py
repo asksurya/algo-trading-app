@@ -4,7 +4,7 @@ Loads strategies, fetches data, generates signals, and executes orders.
 """
 import logging
 from typing import Dict, Any, Optional, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 import uuid
@@ -63,7 +63,7 @@ class StrategyExecutor:
         result = {
             'strategy_id': strategy.id,
             'strategy_name': strategy.name,
-            'evaluated_at': datetime.now(datetime.UTC),
+            'evaluated_at': datetime.now(timezone.utc),
             'signal_generated': False,
             'order_executed': False,
             'error': None
@@ -155,7 +155,7 @@ class StrategyExecutor:
                     # Update signal record with order ID
                     signal_record.was_executed = True
                     signal_record.order_id = order_result['order_id']
-                    signal_record.executed_at = datetime.now(datetime.UTC)
+                    signal_record.executed_at = datetime.now(timezone.utc)
                     
                     # Update execution state
                     await self._update_execution_after_trade(
@@ -174,9 +174,9 @@ class StrategyExecutor:
                 result['dry_run'] = True
             
             # 8. Update execution state
-            execution.last_evaluated_at = datetime.now(datetime.UTC)
+            execution.last_evaluated_at = datetime.now(timezone.utc)
             if signal_type != SignalType.HOLD:
-                execution.last_signal_at = datetime.now(datetime.UTC)
+                execution.last_signal_at = datetime.now(timezone.utc)
             execution.error_count = 0  # Reset error count on success
             execution.last_error = None
             
@@ -239,7 +239,7 @@ class StrategyExecutor:
             limit = parameters.get('lookback_bars', 300)
             
             # Calculate start date based on timeframe
-            end = datetime.now(datetime.UTC)
+            end = datetime.now(timezone.utc)
             if '1Min' in timeframe or '5Min' in timeframe:
                 start = end - timedelta(days=5)  # 5 days for minute bars
             elif '15Min' in timeframe or '30Min' in timeframe:
@@ -396,7 +396,7 @@ class StrategyExecutor:
         db: AsyncSession
     ) -> None:
         """Update execution state after a trade is executed."""
-        execution.last_trade_at = datetime.now(datetime.UTC)
+        execution.last_trade_at = datetime.now(timezone.utc)
         execution.trades_today += 1
         
         if signal_type == SignalType.BUY:

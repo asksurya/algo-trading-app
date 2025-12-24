@@ -3,7 +3,7 @@ Background scheduler for automated strategy execution.
 Uses APScheduler to evaluate active strategies at regular intervals.
 """
 import logging
-from datetime import datetime, time
+from datetime import datetime, time, timezone
 from typing import Dict, List
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -136,8 +136,8 @@ class StrategyScheduler:
                 # Get all active strategy executions
                 result = await session.execute(
                     select(StrategyExecution)
-                    .where(StrategyExecution.is_active == True)
-                    .where(StrategyExecution.state == ExecutionState.RUNNING)
+                    .where(StrategyExecution.state == ExecutionState.ACTIVE)
+                    .where(StrategyExecution.state == ExecutionState.ACTIVE)
                 )
                 active_executions = result.scalars().all()
                 
@@ -156,13 +156,12 @@ class StrategyScheduler:
                             f"Error evaluating strategy {execution.strategy_id}: {e}"
                         )
                         # Update error state
-                        execution.error_message = str(e)
+                        execution.last_error = str(e)
                         execution.error_count += 1
                         
                         # Pause strategy if too many errors
                         if execution.error_count >= 5:
                             execution.state = ExecutionState.ERROR
-                            execution.is_active = False
                             logger.error(
                                 f"Strategy {execution.strategy_id} paused due to "
                                 f"repeated errors"
@@ -222,11 +221,11 @@ class StrategyScheduler:
             result = await executor.execute_strategy(strategy, execution, session)
             
             # Update execution state
-            execution.last_evaluated_at = datetime.now(datetime.UTC)
+            execution.last_evaluated_at = datetime.now(timezone.utc)
             execution.evaluation_count += 1
             
             if result.get("signal"):
-                execution.last_signal_at = datetime.now(datetime.UTC)
+                execution.last_signal_at = datetime.now(timezone.utc)
                 
             if result.get("order_id"):
                 execution.trades_today += 1
@@ -234,7 +233,7 @@ class StrategyScheduler:
                 
             # Clear error count on successful execution
             execution.error_count = 0
-            execution.error_message = None
+            execution.last_error = None
             
             logger.info(
                 f"Strategy {strategy_id} evaluated successfully. "
@@ -270,7 +269,7 @@ class StrategyScheduler:
                 # Get all active executions
                 result = await session.execute(
                     select(StrategyExecution)
-                    .where(StrategyExecution.is_active == True)
+                    .where(StrategyExecution.state == ExecutionState.ACTIVE)
                 )
                 executions = result.scalars().all()
                 
@@ -282,7 +281,7 @@ class StrategyScheduler:
                     
                     # Resume paused strategies at market open
                     if execution.state == ExecutionState.PAUSED:
-                        execution.state = ExecutionState.RUNNING
+                        execution.state = ExecutionState.ACTIVE
                         logger.info(f"Resumed strategy {execution.strategy_id}")
                         
                 await session.commit()
