@@ -4,7 +4,7 @@ Provides historical and real-time market data from Alpaca.
 """
 import logging
 from typing import Optional, List, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from abc import ABC, abstractmethod
 
 from alpaca.data.historical import StockHistoricalDataClient
@@ -15,6 +15,7 @@ from alpaca.data.requests import (
     StockSnapshotRequest,
 )
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+from alpaca.data.enums import DataFeed
 from alpaca.common.exceptions import APIError
 
 from app.core.config import settings
@@ -226,16 +227,17 @@ class AlpacaMarketData(MarketDataProvider):
             
             # Set defaults for start/end if not provided
             if end is None:
-                end = datetime.now(datetime.UTC)
+                end = datetime.now(timezone.utc)
             if start is None:
                 start = end - timedelta(days=30)  # Default to 30 days
-            
+
             request = StockBarsRequest(
                 symbol_or_symbols=symbol,
                 timeframe=tf,
                 start=start,
                 end=end,
                 limit=limit,
+                feed=DataFeed.IEX,  # Use IEX feed for free tier compatibility
             )
             
             bars_dict = self._client.get_stock_bars(request)
