@@ -76,3 +76,6 @@ htmlcov/
 *.jpeg
 charts/
 backend/.env.bak
+
+# Git worktrees
+.worktrees/
