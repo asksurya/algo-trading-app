@@ -50,18 +50,15 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=30)
     
     # CORS
-    ALLOWED_ORIGINS: List[str] = Field(
-        default=["http://localhost:3000"],
+    ALLOWED_ORIGINS: str = Field(
+        default="http://localhost:3000",
         description="Comma-separated list of allowed origins"
     )
-    
-    @field_validator("ALLOWED_ORIGINS", mode='before')
-    @classmethod
-    def parse_origins(cls, v):
+
+    @property
+    def allowed_origins_list(self) -> List[str]:
         """Parse comma-separated origins into list."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
     
     # Alpaca Trading
     ALPACA_API_KEY: str = Field(
@@ -82,6 +79,7 @@ class Settings(BaseSettings):
     SMTP_PORT: Optional[int] = Field(default=587)
     SMTP_USER: Optional[str] = Field(default=None)
     SMTP_PASSWORD: Optional[str] = Field(default=None)
+    EMAIL_FROM: str = Field(default="noreply@algo-trading.local")
     
     # Logging
     LOG_LEVEL: str = Field(default="INFO")
