@@ -100,6 +100,10 @@ class PaperPosition(Base):
     qty: Mapped[float] = mapped_column(Float, nullable=False)
     avg_price: Mapped[float] = mapped_column(Float, nullable=False)
 
+    # Stop-loss and take-profit levels (optional)
+    stop_loss_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    take_profit_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
