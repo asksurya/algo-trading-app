@@ -98,7 +98,9 @@ class PaperTradingService:
                 'avg_price': pos.avg_price,
                 'current_price': current_price,
                 'market_value': market_value,
-                'unrealized_pnl': unrealized_pnl
+                'unrealized_pnl': unrealized_pnl,
+                'stop_loss_price': pos.stop_loss_price,
+                'take_profit_price': pos.take_profit_price
             }
 
         trades_list = [
@@ -177,11 +179,33 @@ class PaperTradingService:
         qty: float,
         side: str,  # 'buy' or 'sell'
         order_type: str = 'market',
-        limit_price: Optional[float] = None
+        limit_price: Optional[float] = None,
+        stop_loss_price: Optional[float] = None,
+        take_profit_price: Optional[float] = None
     ) -> Dict[str, Any]:
         """
         Execute a simulated order.
+
+        Args:
+            user_id: User identifier
+            symbol: Trading symbol (e.g., 'AAPL')
+            qty: Quantity of shares
+            side: Order side ('buy' or 'sell')
+            order_type: Order type ('market' or 'limit')
+            limit_price: Price for limit orders
+            stop_loss_price: Optional stop-loss price (triggers auto-sell if price falls to this level)
+            take_profit_price: Optional take-profit price (triggers auto-sell if price rises to this level)
+
+        Returns:
+            Dict with success status, trade details, and updated account
         """
+        # Validate stop-loss and take-profit are only set for buy orders
+        if side == 'sell' and (stop_loss_price is not None or take_profit_price is not None):
+            return {
+                "success": False,
+                "error": "Stop-loss and take-profit can only be set for buy orders"
+            }
+
         # 1. Fetch Account (Single Query)
         result = await self.session.execute(
             select(PaperAccount)
@@ -248,15 +272,22 @@ class PaperTradingService:
                 total_qty = pos.qty + qty
                 total_cost = (pos.qty * pos.avg_price) + (qty * current_price)
                 avg_price = total_cost / total_qty
-                
+
                 pos.qty = total_qty
                 pos.avg_price = avg_price
+                # Update stop-loss and take-profit if provided (overwrites existing)
+                if stop_loss_price is not None:
+                    pos.stop_loss_price = stop_loss_price
+                if take_profit_price is not None:
+                    pos.take_profit_price = take_profit_price
             else:
                 pos = PaperPosition(
                     account_id=account.id,
                     symbol=symbol,
                     qty=qty,
-                    avg_price=current_price
+                    avg_price=current_price,
+                    stop_loss_price=stop_loss_price,
+                    take_profit_price=take_profit_price
                 )
                 self.session.add(pos)
         
@@ -388,20 +419,93 @@ class PaperTradingService:
 
         return trades_list
 
-        result = await self.session.execute(stmt)
-        trades = result.scalars().all()
+    async def update_position_stop_loss_take_profit(
+        self,
+        user_id: str,
+        symbol: str,
+        stop_loss_price: Optional[float] = None,
+        take_profit_price: Optional[float] = None,
+        clear_stop_loss: bool = False,
+        clear_take_profit: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Update stop-loss and/or take-profit levels on an existing position.
 
-        return [
-            {
-                "symbol": t.symbol,
-                "qty": t.qty,
-                "side": t.side,
-                "price": t.price,
-                "value": t.value,
-                "timestamp": t.timestamp
+        Args:
+            user_id: User identifier
+            symbol: Symbol of the position to update
+            stop_loss_price: New stop-loss price (None to keep existing)
+            take_profit_price: New take-profit price (None to keep existing)
+            clear_stop_loss: If True, remove the stop-loss level
+            clear_take_profit: If True, remove the take-profit level
+
+        Returns:
+            Dict with success status and updated position details
+        """
+        # Get account
+        result = await self.session.execute(
+            select(PaperAccount)
+            .where(PaperAccount.user_id == user_id)
+            .options(selectinload(PaperAccount.positions))
+        )
+        account = result.scalar_one_or_none()
+
+        if not account:
+            return {
+                "success": False,
+                "error": "Paper account not found"
             }
-            for t in trades
-        ]
+
+        # Find the position
+        pos_result = await self.session.execute(
+            select(PaperPosition)
+            .where(and_(PaperPosition.account_id == account.id, PaperPosition.symbol == symbol))
+        )
+        position = pos_result.scalar_one_or_none()
+
+        if not position:
+            return {
+                "success": False,
+                "error": f"No position found for symbol {symbol}"
+            }
+
+        # Update stop-loss
+        if clear_stop_loss:
+            position.stop_loss_price = None
+        elif stop_loss_price is not None:
+            position.stop_loss_price = stop_loss_price
+
+        # Update take-profit
+        if clear_take_profit:
+            position.take_profit_price = None
+        elif take_profit_price is not None:
+            position.take_profit_price = take_profit_price
+
+        await self.session.commit()
+
+        # Fetch current price for response
+        try:
+            trade_data = await self.market_data.get_latest_trade(symbol)
+            current_price = trade_data['price']
+        except Exception:
+            current_price = position.avg_price
+
+        market_value = position.qty * current_price
+        unrealized_pnl = market_value - (position.qty * position.avg_price)
+
+        return {
+            "success": True,
+            "position": {
+                "symbol": position.symbol,
+                "qty": position.qty,
+                "avg_price": position.avg_price,
+                "current_price": current_price,
+                "market_value": market_value,
+                "unrealized_pnl": unrealized_pnl,
+                "stop_loss_price": position.stop_loss_price,
+                "take_profit_price": position.take_profit_price
+            }
+        }
 
     def _format_account(self, account: PaperAccount) -> Dict:
         """Helper to format account model to dictionary."""

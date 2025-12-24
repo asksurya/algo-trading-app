@@ -15,6 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_async_session_local
+from app.models.strategy import Strategy
 from app.models.strategy_execution import StrategyExecution, ExecutionState
 from app.strategies.executor import StrategyExecutor
 
@@ -204,11 +205,21 @@ class StrategyScheduler:
             execution.state = ExecutionState.PAUSED
             return
             
+        # Load strategy model
+        result = await session.execute(
+            select(Strategy).where(Strategy.id == strategy_id)
+        )
+        strategy = result.scalar_one_or_none()
+
+        if not strategy:
+            logger.error(f"Strategy {strategy_id} not found")
+            return
+
         # Execute strategy
-        executor = StrategyExecutor(session)
-        
+        executor = StrategyExecutor()
+
         try:
-            result = await executor.execute_strategy(strategy_id)
+            result = await executor.execute_strategy(strategy, execution, session)
             
             # Update execution state
             execution.last_evaluated_at = datetime.now(datetime.UTC)

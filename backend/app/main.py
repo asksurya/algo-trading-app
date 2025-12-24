@@ -128,7 +128,8 @@ from app.api.v1 import (
     optimizer,
     live_trading,
     portfolio,
-    watchlist
+    watchlist,
+    paper_trading,
 )
 
 app.include_router(
@@ -205,6 +206,11 @@ app.include_router(
     watchlist.router,
     prefix=f"{settings.API_V1_STR}/watchlists",
     tags=["Watchlist & Alerts"]
+)
+app.include_router(
+    paper_trading.router,
+    prefix=f"{settings.API_V1_STR}/paper-trading",
+    tags=["Paper Trading"]
 )
 
 

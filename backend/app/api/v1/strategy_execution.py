@@ -399,18 +399,46 @@ async def test_strategy_execution(
             detail="Strategy not found"
         )
     
-    # Execute strategy in test mode (dry_run=True)
-    executor = StrategyExecutor(session)
-    
+    # Get or create execution record for test mode
+    result = await session.execute(
+        select(StrategyExecution)
+        .where(StrategyExecution.strategy_id == strategy_id)
+    )
+    execution = result.scalar_one_or_none()
+
+    # Create a temporary execution for dry run if none exists
+    if not execution:
+        execution = StrategyExecution(
+            strategy_id=strategy_id,
+            is_active=False,
+            state=ExecutionState.IDLE,
+        )
+        session.add(execution)
+        await session.flush()
+
+    # Mark as dry run for this test
+    original_dry_run = getattr(execution, 'is_dry_run', False)
+    execution.is_dry_run = True
+
+    # Execute strategy in test mode
+    executor = StrategyExecutor()
+
     try:
-        result = await executor.execute_strategy(strategy_id, dry_run=True)
-        
+        exec_result = await executor.execute_strategy(strategy, execution, session)
+
+        # Restore original dry_run state
+        execution.is_dry_run = original_dry_run
+        await session.commit()
+
         return {
             "success": True,
             "message": "Strategy test execution completed (no orders placed)",
-            "data": result
+            "data": exec_result
         }
     except Exception as e:
+        # Restore original dry_run state on error
+        execution.is_dry_run = original_dry_run
+        await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Strategy test failed: {str(e)}"

@@ -4,9 +4,11 @@ Portfolio analytics service for calculating performance metrics and reports.
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict
 import math
+from fastapi import Depends
 from sqlalchemy import select, and_, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database import get_db
 from app.integrations.alpaca_client import AlpacaClient
 from app.models.portfolio import PortfolioSnapshot
 
@@ -333,7 +335,9 @@ class PortfolioAnalyticsService:
         }
 
 
-async def get_portfolio_analytics_service(session: AsyncSession) -> PortfolioAnalyticsService:
+async def get_portfolio_analytics_service(
+    session: AsyncSession = Depends(get_db)
+) -> PortfolioAnalyticsService:
     """Dependency injection for portfolio analytics service."""
     from app.integrations.alpaca_client import get_alpaca_client
     broker = get_alpaca_client()
