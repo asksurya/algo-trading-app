@@ -17,10 +17,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       await login({ email, password });
@@ -43,6 +45,7 @@ export default function LoginPage() {
         errorMessage = error.message;
       }
 
+      setError(errorMessage);
       toast({
         title: "Login Failed",
         description: errorMessage,
@@ -61,8 +64,16 @@ export default function LoginPage() {
           Enter your email and password to access your account
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} data-testid="login-form">
         <CardContent className="space-y-4">
+          {error && (
+            <div
+              data-testid="error-message"
+              className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md"
+            >
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input

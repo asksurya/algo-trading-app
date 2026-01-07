@@ -5,7 +5,7 @@ This service monitors market conditions and detects buy/sell signals based on
 strategy logic. It works with the StrategyScheduler to enable continuous
 automated trading.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -15,6 +15,7 @@ import pandas as pd
 from app.models import LiveStrategy, SignalHistory, Strategy, SignalType, Order, OrderSideEnum
 from app.integrations.alpaca_client import AlpacaClient
 from app.services.market_data_cache_service import MarketDataCacheService
+from app.integrations.market_data import get_market_data_service
 from app.strategies.signal_generator import SignalGenerator
 from app.services.risk_manager import RiskManager
 
@@ -40,7 +41,7 @@ class TradingSignal:
         self.strength = strength
         self.volume = volume
         self.indicators = indicators or {}
-        self.timestamp = timestamp or datetime.now(datetime.UTC)
+        self.timestamp = timestamp or datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert signal to dictionary."""
@@ -71,9 +72,12 @@ class SignalMonitor:
     ):
         self.db = db
         self.alpaca_client = alpaca_client
-        self.market_data_cache = market_data_cache or MarketDataCacheService(db)
+        # Only use cache if explicitly provided (avoid sync/async mismatch)
+        self.market_data_cache = market_data_cache
+        # Use market data service for fetching historical data
+        self.market_data_service = get_market_data_service()
         self.signal_generator = SignalGenerator()
-        self.risk_manager = RiskManager(db)
+        self.risk_manager = RiskManager(db, alpaca_client)
     
     async def check_strategy_signals(
         self,
@@ -114,9 +118,9 @@ class SignalMonitor:
                     await self._save_signal_history(live_strategy, signal)
             
             # Update strategy metrics
-            live_strategy.last_check = datetime.now(datetime.UTC)
+            live_strategy.last_check = datetime.now(timezone.utc)
             if signals:
-                live_strategy.last_signal = datetime.now(datetime.UTC)
+                live_strategy.last_signal = datetime.now(timezone.utc)
                 live_strategy.total_signals += len(signals)
             
             self.db.commit()
@@ -165,8 +169,11 @@ class SignalMonitor:
             ]
             
             # Generate signal based on strategy type
+            # Clean strategy name: "Keltner Channel Strategy" -> "Keltner_Channel"
+            strategy_type_clean = strategy.name.replace(" Strategy", "").replace(" ", "_")
+
             signal_type, strength, reasoning, indicators = self.signal_generator.generate_signal(
-                strategy_type=strategy.name,
+                strategy_type=strategy_type_clean,
                 parameters=strategy.parameters or {},
                 bars=bars,
                 has_position=has_position
@@ -177,7 +184,7 @@ class SignalMonitor:
                 live_strategy.state[symbol] = {}
             live_strategy.state[symbol].update({
                 "last_price": float(current_price),
-                "last_check": datetime.now(datetime.UTC).isoformat(),
+                "last_check": datetime.now(timezone.utc).isoformat(),
                 "indicators": indicators
             })
             
@@ -204,32 +211,60 @@ class SignalMonitor:
     async def _get_market_data(self, symbol: str, days: int = 60) -> Optional[pd.DataFrame]:
         """Get market data for signal analysis."""
         try:
-            # Try cache first
-            end_date = datetime.now(datetime.UTC).date()
+            end_date = datetime.now(timezone.utc)
             start_date = end_date - timedelta(days=days)
-            
-            df = self.market_data_cache.get_cached_data(
-                symbol=symbol,
-                start_date=start_date,
-                end_date=end_date
-            )
-            
-            if df is not None and len(df) > 0:
-                return df
-            
-            # If not in cache, fetch from Alpaca
-            if self.alpaca_client:
-                df = await self.alpaca_client.get_historical_data(
+
+            # Try cache first if available
+            if self.market_data_cache:
+                try:
+                    df = await self.market_data_cache.get_historical_data(
+                        symbol=symbol,
+                        start_date=start_date,
+                        end_date=end_date
+                    )
+
+                    if df is not None and len(df) > 0:
+                        return df
+                except Exception as cache_error:
+                    logger.warning(f"Cache error for {symbol}, falling back to Alpaca: {cache_error}")
+
+            # Fetch from Alpaca market data service
+            try:
+                bars_data = await self.market_data_service.get_bars(
                     symbol=symbol,
-                    start_date=start_date,
-                    end_date=end_date
+                    timeframe="1Day",
+                    start=start_date,
+                    end=end_date,
+                    limit=days,
+                    use_cache=False  # Don't use internal cache since we have our own
                 )
-                
-                if df is not None and len(df) > 0:
-                    # Cache the data
-                    self.market_data_cache.cache_data(df, symbol)
+
+                if bars_data and len(bars_data) > 0:
+                    # Convert bars to DataFrame
+                    df = pd.DataFrame([
+                        {
+                            "timestamp": pd.to_datetime(bar["timestamp"]),
+                            "open": bar["open"],
+                            "high": bar["high"],
+                            "low": bar["low"],
+                            "close": bar["close"],
+                            "volume": bar["volume"]
+                        }
+                        for bar in bars_data
+                    ])
+                    df.set_index("timestamp", inplace=True)
+
+                    # Try to cache the data if cache is available
+                    if self.market_data_cache:
+                        try:
+                            await self.market_data_cache._store_in_cache(symbol, df)
+                        except Exception as cache_error:
+                            logger.warning(f"Failed to cache data for {symbol}: {cache_error}")
+
                     return df
-            
+            except Exception as e:
+                logger.error(f"Error fetching bars from market data service: {e}")
+
             return None
             
         except Exception as e:

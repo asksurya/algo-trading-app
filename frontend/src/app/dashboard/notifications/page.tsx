@@ -137,14 +137,14 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen" data-testid="notifications-loading">
+        <Loader2 className="h-8 w-8 animate-spin" data-testid="notifications-loading-spinner" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto py-8 space-y-6" data-testid="notifications-container">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -158,11 +158,12 @@ export default function NotificationsPage() {
             variant="outline"
             onClick={() => markAllReadMutation.mutate()}
             disabled={markAllReadMutation.isPending || !stats?.total_unread}
+            data-testid="notifications-mark-all-read"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
             Mark All Read
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" data-testid="notifications-preferences">
             <Settings className="h-4 w-4 mr-2" />
             Preferences
           </Button>
@@ -170,8 +171,8 @@ export default function NotificationsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
+      <div className="grid gap-4 md:grid-cols-4" data-testid="notifications-stats">
+        <Card data-testid="notifications-stat-unread">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Total Unread</CardTitle>
           </CardHeader>
@@ -179,7 +180,7 @@ export default function NotificationsPage() {
             <div className="text-2xl font-bold">{stats?.total_unread || 0}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="notifications-stat-recent">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Recent (24h)</CardTitle>
           </CardHeader>
@@ -187,7 +188,7 @@ export default function NotificationsPage() {
             <div className="text-2xl font-bold">{stats?.recent_count || 0}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="notifications-stat-high">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">High Priority</CardTitle>
           </CardHeader>
@@ -197,7 +198,7 @@ export default function NotificationsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card data-testid="notifications-stat-urgent">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Urgent</CardTitle>
           </CardHeader>
@@ -210,22 +211,22 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <Card>
+      <Card data-testid="notifications-card">
         <CardHeader>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="unread">
+          <Tabs value={activeTab} onValueChange={setActiveTab} data-testid="notifications-filter-tabs">
+            <TabsList data-testid="notifications-tabs-list">
+              <TabsTrigger value="all" data-testid="notifications-filter-all">All</TabsTrigger>
+              <TabsTrigger value="unread" data-testid="notifications-filter-unread">
                 Unread {stats?.total_unread ? `(${stats.total_unread})` : ""}
               </TabsTrigger>
-              <TabsTrigger value="urgent">Urgent</TabsTrigger>
+              <TabsTrigger value="urgent" data-testid="notifications-filter-urgent">Urgent</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[600px] pr-4">
+          <ScrollArea className="h-[600px] pr-4" data-testid="notifications-scroll-area">
             {filteredNotifications && filteredNotifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground" data-testid="notifications-empty-state">
                 <BellOff className="h-12 w-12 mb-4" />
                 <p>No notifications</p>
               </div>
@@ -237,6 +238,7 @@ export default function NotificationsPage() {
                     className={`transition-colors ${
                       !notification.is_read ? "bg-accent/50" : ""
                     }`}
+                    data-testid={`notifications-item-${notification.id}`}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -262,6 +264,7 @@ export default function NotificationsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => markReadMutation.mutate(notification.id)}
+                              data-testid={`notifications-mark-read-${notification.id}`}
                             >
                               <Check className="h-4 w-4" />
                             </Button>
@@ -274,6 +277,7 @@ export default function NotificationsPage() {
                                 deleteMutation.mutate(notification.id);
                               }
                             }}
+                            data-testid={`notifications-delete-${notification.id}`}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

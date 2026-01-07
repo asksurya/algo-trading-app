@@ -5,7 +5,7 @@ This service schedules and executes live strategy checks in the background,
 monitors for trading signals, and automatically executes trades when conditions
 are met. It's the core automation engine for Phase 9.
 """
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 import asyncio
@@ -52,19 +52,19 @@ class StrategyScheduler:
         if self.running:
             logger.warning("Scheduler already running")
             return
-        
+
         self.running = True
         logger.info("Starting strategy scheduler")
-        
+
         try:
             while self.running:
                 # Get all active strategies
                 active_strategies = self.db.query(LiveStrategy).filter(
                     LiveStrategy.status == LiveStrategyStatus.ACTIVE
                 ).all()
-                
+
                 logger.info(f"Checking {len(active_strategies)} active strategies")
-                
+
                 # Check each strategy
                 for live_strategy in active_strategies:
                     try:
@@ -98,8 +98,14 @@ class StrategyScheduler:
         """Determine if a strategy should be checked now."""
         if not live_strategy.last_check:
             return True
-        
-        elapsed = (datetime.now(datetime.UTC) - live_strategy.last_check).total_seconds()
+
+        # Ensure last_check is timezone-aware
+        last_check = live_strategy.last_check
+        if last_check.tzinfo is None:
+            # If naive, assume UTC
+            last_check = last_check.replace(tzinfo=timezone.utc)
+
+        elapsed = (datetime.now(timezone.utc) - last_check).total_seconds()
         return elapsed >= live_strategy.check_interval
     
     async def _check_and_execute_strategy(self, live_strategy: LiveStrategy):
@@ -229,7 +235,7 @@ class StrategyScheduler:
                     if signal_history:
                         signal_history.executed = True
                         signal_history.order_id = order.id
-                        signal_history.execution_time = datetime.now(datetime.UTC)
+                        signal_history.execution_time = datetime.now(timezone.utc)
                         signal_history.execution_price = order.filled_avg_price or signal.price
                     
                     # Update strategy metrics
@@ -352,7 +358,7 @@ class StrategyScheduler:
                 return False
             
             live_strategy.status = LiveStrategyStatus.ACTIVE
-            live_strategy.started_at = datetime.now(datetime.UTC)
+            live_strategy.started_at = datetime.now(timezone.utc)
             live_strategy.stopped_at = None
             live_strategy.error_message = None
             
@@ -386,7 +392,7 @@ class StrategyScheduler:
                 return False
             
             live_strategy.status = LiveStrategyStatus.STOPPED
-            live_strategy.stopped_at = datetime.now(datetime.UTC)
+            live_strategy.stopped_at = datetime.now(timezone.utc)
             
             self.db.commit()
             

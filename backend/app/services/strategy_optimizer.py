@@ -5,7 +5,7 @@ performance ranking, and risk-aware automated trading.
 """
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID, uuid4
 import asyncio
 from dataclasses import dataclass
@@ -15,6 +15,7 @@ from sqlalchemy import select
 from app.models.strategy import Strategy
 from app.models.backtest import Backtest, BacktestStatus
 from app.models.order import Order, OrderSideEnum, OrderTypeEnum
+from app.models.enums import NotificationType, NotificationPriority
 from app.backtesting.runner import BacktestRunner
 from app.services.risk_manager import RiskManager
 from app.services.notification_service import NotificationService
@@ -161,7 +162,7 @@ class StrategyOptimizer:
                 symbol=symbol,
                 best_strategy=performances[0] if performances else None,
                 all_performances=performances,
-                analysis_date=datetime.now(datetime.UTC)
+                analysis_date=datetime.now(timezone.utc)
             )
         
         logger.info(
@@ -266,11 +267,11 @@ class StrategyOptimizer:
                     # Send notification
                     await self.notification_service.create_notification(
                         user_id=user_id,
+                        notification_type=NotificationType.RISK_BREACH,
                         title=f"Trade Blocked: {symbol}",
                         message=f"Risk rule breach prevented trade execution",
-                        notification_type="RISK_ALERT",
-                        priority="high",
-                        metadata={
+                        priority=NotificationPriority.HIGH.value,
+                        data={
                             "symbol": symbol,
                             "breaches": [b.rule_name for b in blocking_breaches]
                         }
@@ -316,14 +317,14 @@ class StrategyOptimizer:
                 # Send success notification
                 await self.notification_service.create_notification(
                     user_id=user_id,
+                    notification_type=NotificationType.ORDER_FILLED,
                     title=f"Auto-Trade Executed: {symbol}",
                     message=(
                         f"Bought {shares} shares using {opt_result.best_strategy.strategy_name} "
                         f"(Score: {opt_result.best_strategy.composite_score:.2f})"
                     ),
-                    notification_type="ORDER",
-                    priority="medium",
-                    metadata={
+                    priority=NotificationPriority.MEDIUM.value,
+                    data={
                         "symbol": symbol,
                         "order_id": str(order.id),
                         "strategy": opt_result.best_strategy.strategy_name
@@ -369,20 +370,24 @@ class StrategyOptimizer:
         initial_capital: float
     ) -> Backtest:
         """Create a backtest configuration."""
+        # Ensure dates are timezone-aware
+        if start_date.tzinfo is None:
+            start_date = start_date.replace(tzinfo=timezone.utc)
+        if end_date.tzinfo is None:
+            end_date = end_date.replace(tzinfo=timezone.utc)
+
         backtest = Backtest(
-            id=uuid4(),
-            user_id=user_id,
-            strategy_id=strategy_id,
+            id=str(uuid4()),
+            user_id=str(user_id) if not isinstance(user_id, str) else user_id,
+            strategy_id=str(strategy_id) if not isinstance(strategy_id, str) else strategy_id,
+            name=f"Optimization Backtest - {symbol}",
+            description=f"Auto-generated backtest for {symbol} optimization",
             start_date=start_date,
             end_date=end_date,
             initial_capital=initial_capital,
             commission=0.0,  # Commission-free for Alpaca
             slippage=0.001,  # 0.1% slippage
-            status=BacktestStatus.PENDING,
-            metadata={
-                "symbol": symbol,
-                "optimization_run": True
-            }
+            status=BacktestStatus.PENDING
         )
         
         self.db.add(backtest)
@@ -423,10 +428,15 @@ class StrategyOptimizer:
         strategy: Strategy,
         backtest: Backtest
     ) -> tuple:
-        """Execute a single backtest."""
+        """Execute a single backtest with its own database session."""
+        from app.database import get_db_context
+
         try:
-            result = await self.backtest_runner.run_backtest(backtest.id)
-            return (symbol, strategy, result)
+            # Create a new database session for this backtest to avoid concurrency issues
+            async with get_db_context() as db:
+                runner = BacktestRunner(db)
+                result = await runner.run_backtest(backtest.id)
+                return (symbol, strategy, result)
         except Exception as e:
             logger.error(f"Backtest execution failed: {e}")
             raise
@@ -453,7 +463,7 @@ class StrategyOptimizer:
             select(Backtest).where(Backtest.id == backtest_id)
         )
         backtest = result.scalar_one_or_none()
-        net_profit = backtest.total_pnl if backtest else 0
+        net_profit = backtest.total_pnl if (backtest and backtest.total_pnl is not None) else 0.0
         
         # Calculate composite score
         composite_score = await self._calculate_composite_score(

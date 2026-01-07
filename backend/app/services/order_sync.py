@@ -3,7 +3,7 @@ Order synchronization service.
 Syncs orders from Alpaca to local database for tracking and analytics.
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone, timezone
 from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -83,7 +83,7 @@ class OrderSyncService:
                     "failed_at": stmt.excluded.failed_at,
                     "replaced_at": stmt.excluded.replaced_at,
                     "replaced_by": stmt.excluded.replaced_by,
-                    "updated_at": datetime.now(datetime.UTC),
+                    "updated_at": datetime.now(timezone.utc),
                 }
             )
             

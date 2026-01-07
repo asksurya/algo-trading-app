@@ -51,7 +51,7 @@ class LiveStrategy(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     symbols: Mapped[list] = mapped_column(JSON, nullable=False, comment="List of symbols to monitor")
     status: Mapped[LiveStrategyStatus] = mapped_column(
-        SQLEnum(LiveStrategyStatus, values_callable=lambda x: [e.value for e in x]),
+        SQLEnum(LiveStrategyStatus, name="livestrategystatusenum", values_callable=lambda x: [e.value for e in x]),
         default=LiveStrategyStatus.STOPPED,
         nullable=False,
         index=True

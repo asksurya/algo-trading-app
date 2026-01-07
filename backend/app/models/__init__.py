@@ -36,6 +36,8 @@ from app.models.enums import (
     # Portfolio enums
     TaxLotStatus,
     PerformancePeriod,
+    # Audit enums
+    AuditEventType,
 )
 
 # Import models
@@ -52,6 +54,8 @@ from app.models.backtest import Backtest, BacktestResult, BacktestTrade
 from app.models.strategy_execution import StrategyExecution, StrategySignal, StrategyPerformance
 from app.models.portfolio import PortfolioSnapshot, PerformanceMetrics, TaxLot
 from app.models.paper_trading import PaperAccount, PaperPosition, PaperTrade
+from app.models.watchlist import Watchlist, WatchlistItem, PriceAlert
+from app.models.audit_log import AuditLog
 
 __all__ = [
     # Base
@@ -121,4 +125,11 @@ __all__ = [
     "PaperAccount",
     "PaperPosition",
     "PaperTrade",
+    # Models - Watchlist
+    "Watchlist",
+    "WatchlistItem",
+    "PriceAlert",
+    # Models - Audit
+    "AuditLog",
+    "AuditEventType",
 ]

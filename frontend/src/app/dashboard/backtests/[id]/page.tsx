@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useBacktest } from '@/lib/hooks/use-backtests';
 import { ArrowLeft, TrendingUp, TrendingDown } from 'lucide-react';
+import { DeployToLiveButton } from '@/components/deploy-to-live-button';
 
 export default function BacktestResultsPage() {
   const params = useParams();
@@ -18,13 +19,18 @@ export default function BacktestResultsPage() {
   }
 
   const backtest = data;
-  
+
   if (!backtest) {
     return <div className="text-center py-12">Backtest not found</div>;
   }
 
   const results = backtest.results;
   const trades = backtest.trades || [];
+
+  // Extract unique symbols from trades for deployment
+  const symbols = trades.length > 0
+    ? [...new Set(trades.map(trade => trade.symbol))]
+    : ['AAPL'];
 
   return (
     <div className="space-y-6">
@@ -53,6 +59,15 @@ export default function BacktestResultsPage() {
         >
           {backtest.status}
         </Badge>
+        {backtest.status === 'completed' && results && results.total_return_pct > 0 && (
+          <DeployToLiveButton
+            strategyId={backtest.strategy_id}
+            strategyName={backtest.name}
+            symbols={symbols}
+            variant="default"
+            size="lg"
+          />
+        )}
       </div>
 
       {/* Performance Summary */}

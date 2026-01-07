@@ -15,7 +15,7 @@ class OptimizeStrategyRequest(BaseModel):
         min_items=1,
         max_items=20
     )
-    strategy_ids: Optional[List[int]] = Field(
+    strategy_ids: Optional[List[str]] = Field(
         None,
         description="Optional list of strategy IDs (all if None)"
     )
@@ -36,7 +36,7 @@ class OptimizeStrategyRequest(BaseModel):
 
 class StrategyPerformanceSchema(BaseModel):
     """Performance metrics for a strategy on a specific symbol."""
-    strategy_id: int
+    strategy_id: str
     strategy_name: str
     symbol: str
     backtest_id: UUID

@@ -70,9 +70,19 @@ class SignalGenerator:
             return self._generate_bollinger_signal(parameters, indicator_values, has_position)
         elif strategy_type_upper == 'MEAN_REVERSION':
             return self._generate_mean_reversion_signal(parameters, indicator_values, has_position)
+        elif strategy_type_upper == 'STOCHASTIC':
+            return self._generate_stochastic_signal(parameters, indicator_values, has_position)
+        elif strategy_type_upper == 'KELTNER_CHANNEL':
+            return self._generate_keltner_signal(parameters, indicator_values, has_position)
+        elif strategy_type_upper == 'ATR_TRAILING_STOP':
+            return self._generate_atr_trailing_stop_signal(parameters, indicator_values, has_position)
+        elif strategy_type_upper == 'DONCHIAN_CHANNEL':
+            return self._generate_donchian_signal(parameters, indicator_values, has_position)
+        elif strategy_type_upper == 'ICHIMOKU_CLOUD':
+            return self._generate_ichimoku_signal(parameters, indicator_values, has_position)
         else:
             raise ValueError(f"Unknown strategy type: {strategy_type}")
-    
+
     def _generate_rsi_signal(
         self,
         parameters: Dict[str, Any],
@@ -300,7 +310,278 @@ class SignalGenerator:
         else:
             reasoning = f"Price ({price:.2f}) z-score ({z_score:.2f}) not at extreme. SMA: {sma:.2f}"
             return SignalType.HOLD, 0.0, reasoning, signal_indicators
-    
+
+    def _generate_stochastic_signal(
+        self,
+        parameters: Dict[str, Any],
+        indicators: Dict[str, Any],
+        has_position: bool
+    ) -> Tuple[SignalType, float, str, Dict[str, Any]]:
+        """
+        Generate Stochastic Oscillator strategy signal.
+
+        BUY: %K crosses above %D in oversold zone
+        SELL: %K crosses below %D in overbought zone
+        """
+        stoch_k = indicators.get('stoch_k_current', 50)
+        stoch_d = indicators.get('stoch_d_current', 50)
+        prev_k = indicators.get('stoch_k_prev', 50)
+        prev_d = indicators.get('stoch_d_prev', 50)
+
+        oversold = parameters.get('oversold', 20)
+        overbought = parameters.get('overbought', 80)
+
+        signal_indicators = {
+            'stoch_k': stoch_k,
+            'stoch_d': stoch_d,
+            'oversold': oversold,
+            'overbought': overbought,
+            'current_price': indicators.get('current_price', 0)
+        }
+
+        # BUY: %K crosses above %D in oversold zone
+        if stoch_k > stoch_d and prev_k <= prev_d and stoch_k < oversold and not has_position:
+            strength = min((oversold - stoch_k) / oversold, 1.0)
+            reasoning = f"Stochastic bullish crossover in oversold zone (%K={stoch_k:.1f}, %D={stoch_d:.1f})"
+            logger.info(f"STOCHASTIC BUY signal: {reasoning}")
+            return SignalType.BUY, max(strength, 0.3), reasoning, signal_indicators
+
+        # SELL: %K crosses below %D in overbought zone
+        elif stoch_k < stoch_d and prev_k >= prev_d and stoch_k > overbought and has_position:
+            strength = min((stoch_k - overbought) / (100 - overbought), 1.0)
+            reasoning = f"Stochastic bearish crossover in overbought zone (%K={stoch_k:.1f}, %D={stoch_d:.1f})"
+            logger.info(f"STOCHASTIC SELL signal: {reasoning}")
+            return SignalType.SELL, max(strength, 0.3), reasoning, signal_indicators
+
+        else:
+            reasoning = f"Stochastic neutral (%K={stoch_k:.1f}, %D={stoch_d:.1f})"
+            return SignalType.HOLD, 0.0, reasoning, signal_indicators
+
+    def _generate_keltner_signal(
+        self,
+        parameters: Dict[str, Any],
+        indicators: Dict[str, Any],
+        has_position: bool
+    ) -> Tuple[SignalType, float, str, Dict[str, Any]]:
+        """
+        Generate Keltner Channel strategy signal.
+
+        Breakout: BUY above upper, SELL below lower
+        Mean Reversion: BUY at lower, SELL at upper
+        """
+        price = indicators.get('current_price', 0)
+        kc_upper = indicators.get('kc_upper_current', price)
+        kc_middle = indicators.get('kc_middle_current', price)
+        kc_lower = indicators.get('kc_lower_current', price)
+
+        use_breakout = parameters.get('use_breakout', True)
+
+        signal_indicators = {
+            'kc_upper': kc_upper,
+            'kc_middle': kc_middle,
+            'kc_lower': kc_lower,
+            'current_price': price,
+            'mode': 'breakout' if use_breakout else 'mean_reversion'
+        }
+
+        if use_breakout:
+            # Breakout mode
+            if price > kc_upper and not has_position:
+                distance_pct = ((price - kc_upper) / kc_upper) * 100
+                strength = min(distance_pct * 5, 1.0)
+                reasoning = f"Keltner breakout above upper band (price={price:.2f}, upper={kc_upper:.2f})"
+                return SignalType.BUY, max(strength, 0.3), reasoning, signal_indicators
+            elif price < kc_lower and has_position:
+                distance_pct = ((kc_lower - price) / kc_lower) * 100
+                strength = min(distance_pct * 5, 1.0)
+                reasoning = f"Keltner breakdown below lower band (price={price:.2f}, lower={kc_lower:.2f})"
+                return SignalType.SELL, max(strength, 0.3), reasoning, signal_indicators
+        else:
+            # Mean reversion mode
+            if price <= kc_lower and not has_position:
+                distance_pct = ((kc_lower - price) / kc_lower) * 100
+                strength = min(distance_pct * 10, 1.0)
+                reasoning = f"Keltner mean reversion buy at lower band (price={price:.2f}, lower={kc_lower:.2f})"
+                return SignalType.BUY, max(strength, 0.3), reasoning, signal_indicators
+            elif price >= kc_upper and has_position:
+                distance_pct = ((price - kc_upper) / kc_upper) * 100
+                strength = min(distance_pct * 10, 1.0)
+                reasoning = f"Keltner mean reversion sell at upper band (price={price:.2f}, upper={kc_upper:.2f})"
+                return SignalType.SELL, max(strength, 0.3), reasoning, signal_indicators
+
+        reasoning = f"Keltner neutral (price={price:.2f}, middle={kc_middle:.2f})"
+        return SignalType.HOLD, 0.0, reasoning, signal_indicators
+
+    def _generate_donchian_signal(
+        self,
+        parameters: Dict[str, Any],
+        indicators: Dict[str, Any],
+        has_position: bool
+    ) -> Tuple[SignalType, float, str, Dict[str, Any]]:
+        """
+        Generate Donchian Channel (Turtle Trading) strategy signal.
+
+        BUY: Price breaks above N-day high
+        SELL: Price breaks below exit period low
+        """
+        price = indicators.get('current_price', 0)
+        entry_high = indicators.get('entry_high_prev', price)
+        exit_low = indicators.get('exit_low_prev', price)
+        atr = indicators.get('atr_current', 0)
+
+        signal_indicators = {
+            'entry_high': entry_high,
+            'exit_low': exit_low,
+            'atr': atr,
+            'current_price': price
+        }
+
+        # BUY: Price breaks above entry high
+        if price > entry_high and not has_position:
+            breakout_pct = ((price - entry_high) / entry_high) * 100
+            strength = min(breakout_pct * 10, 1.0)
+            reasoning = f"Donchian breakout above {parameters.get('entry_period', 20)}-day high (price={price:.2f}, high={entry_high:.2f})"
+            logger.info(f"DONCHIAN BUY signal: {reasoning}")
+            return SignalType.BUY, max(strength, 0.3), reasoning, signal_indicators
+
+        # SELL: Price breaks below exit low
+        elif price < exit_low and has_position:
+            breakdown_pct = ((exit_low - price) / exit_low) * 100
+            strength = min(breakdown_pct * 10, 1.0)
+            reasoning = f"Donchian breakdown below {parameters.get('exit_period', 10)}-day low (price={price:.2f}, low={exit_low:.2f})"
+            logger.info(f"DONCHIAN SELL signal: {reasoning}")
+            return SignalType.SELL, max(strength, 0.3), reasoning, signal_indicators
+
+        else:
+            reasoning = f"Donchian neutral (price={price:.2f}, high={entry_high:.2f}, low={exit_low:.2f})"
+            return SignalType.HOLD, 0.0, reasoning, signal_indicators
+
+
+    def _generate_atr_trailing_stop_signal(
+        self,
+        parameters: Dict[str, Any],
+        indicators: Dict[str, Any],
+        has_position: bool
+    ) -> Tuple[SignalType, float, str, Dict[str, Any]]:
+        """
+        Generate ATR Trailing Stop strategy signal.
+
+        BUY: Price crosses above trend EMA
+        SELL: Price crosses below trailing stop
+        """
+        price = indicators.get('current_price', 0)
+        prev_price = indicators.get('prev_close', price)
+        trend_ema = indicators.get('trend_ema_current', price)
+        prev_trend_ema = indicators.get('trend_ema_prev', trend_ema)
+        trailing_stop = indicators.get('trailing_stop_current', 0)
+        prev_trailing_stop = indicators.get('trailing_stop_prev', trailing_stop)
+        atr = indicators.get('atr_current', 0)
+
+        signal_indicators = {
+            'atr': atr,
+            'trend_ema': trend_ema,
+            'trailing_stop': trailing_stop,
+            'current_price': price
+        }
+
+        # BUY: Price crosses above trend EMA
+        if price > trend_ema and prev_price <= prev_trend_ema and not has_position:
+            distance_pct = ((price - trend_ema) / trend_ema) * 100
+            strength = min(distance_pct * 5, 1.0)
+            reasoning = f"ATR Trailing Stop: Price crossed above trend EMA (price={price:.2f}, ema={trend_ema:.2f})"
+            return SignalType.BUY, max(strength, 0.3), reasoning, signal_indicators
+
+        # SELL: Price crosses below trailing stop
+        elif price < trailing_stop and prev_price >= prev_trailing_stop and has_position:
+            distance_pct = ((trailing_stop - price) / trailing_stop) * 100
+            strength = min(distance_pct * 5, 1.0)
+            reasoning = f"ATR Trailing Stop: Price crossed below stop (price={price:.2f}, stop={trailing_stop:.2f})"
+            return SignalType.SELL, max(strength, 0.3), reasoning, signal_indicators
+
+        else:
+            reasoning = f"ATR Trailing Stop neutral (price={price:.2f}, stop={trailing_stop:.2f})"
+            return SignalType.HOLD, 0.0, reasoning, signal_indicators
+
+    def _generate_ichimoku_signal(
+        self,
+        parameters: Dict[str, Any],
+        indicators: Dict[str, Any],
+        has_position: bool
+    ) -> Tuple[SignalType, float, str, Dict[str, Any]]:
+        """
+        Generate Ichimoku Cloud strategy signal.
+
+        BUY: TK cross up + price above cloud + bullish cloud
+        SELL: TK cross down + price below cloud + bearish cloud
+        """
+        price = indicators.get('current_price', 0)
+        tenkan = indicators.get('tenkan_sen_current', price)
+        kijun = indicators.get('kijun_sen_current', price)
+        prev_tenkan = indicators.get('tenkan_sen_prev', tenkan)
+        prev_kijun = indicators.get('kijun_sen_prev', kijun)
+        cloud_top = indicators.get('cloud_top_current', price)
+        cloud_bottom = indicators.get('cloud_bottom_current', price)
+        future_senkou_a = indicators.get('future_senkou_a_current', price)
+        future_senkou_b = indicators.get('future_senkou_b_current', price)
+
+        signal_indicators = {
+            'tenkan_sen': tenkan,
+            'kijun_sen': kijun,
+            'cloud_top': cloud_top,
+            'cloud_bottom': cloud_bottom,
+            'current_price': price
+        }
+
+        # TK Cross detection
+        tk_cross_up = tenkan > kijun and prev_tenkan <= prev_kijun
+        tk_cross_down = tenkan < kijun and prev_tenkan >= prev_kijun
+
+        # Position relative to cloud
+        price_above_cloud = price > cloud_top
+        price_below_cloud = price < cloud_bottom
+
+        # Future cloud direction
+        future_cloud_bullish = future_senkou_a > future_senkou_b
+        future_cloud_bearish = future_senkou_a < future_senkou_b
+
+        # Strong BUY signal
+        if tk_cross_up and price_above_cloud and future_cloud_bullish and not has_position:
+            strength = 0.9  # Strong signal
+            reasoning = f"Ichimoku strong bullish: TK cross up, price above cloud, bullish future cloud"
+            logger.info(f"ICHIMOKU BUY signal: {reasoning}")
+            return SignalType.BUY, strength, reasoning, signal_indicators
+
+        # Weak BUY signal
+        elif tk_cross_up and not has_position:
+            strength = 0.5  # Weak signal
+            reasoning = f"Ichimoku weak bullish: TK cross up (price={price:.2f}, tenkan={tenkan:.2f}, kijun={kijun:.2f})"
+            logger.info(f"ICHIMOKU BUY signal: {reasoning}")
+            return SignalType.BUY, strength, reasoning, signal_indicators
+
+        # Strong SELL signal
+        elif tk_cross_down and price_below_cloud and future_cloud_bearish and has_position:
+            strength = 0.9  # Strong signal
+            reasoning = f"Ichimoku strong bearish: TK cross down, price below cloud, bearish future cloud"
+            logger.info(f"ICHIMOKU SELL signal: {reasoning}")
+            return SignalType.SELL, strength, reasoning, signal_indicators
+
+        # Weak SELL signal
+        elif tk_cross_down and has_position:
+            strength = 0.5  # Weak signal
+            reasoning = f"Ichimoku weak bearish: TK cross down (price={price:.2f}, tenkan={tenkan:.2f}, kijun={kijun:.2f})"
+            logger.info(f"ICHIMOKU SELL signal: {reasoning}")
+            return SignalType.SELL, strength, reasoning, signal_indicators
+
+        else:
+            if price > cloud_top:
+                bias = "bullish"
+            elif price < cloud_bottom:
+                bias = "bearish"
+            else:
+                bias = "neutral"
+            reasoning = f"Ichimoku {bias} (price={price:.2f}, cloud_top={cloud_top:.2f}, cloud_bottom={cloud_bottom:.2f})"
+            return SignalType.HOLD, 0.0, reasoning, signal_indicators
+
     @staticmethod
     def _calculate_rsi_strength(rsi: float, threshold: float, signal_type: str) -> float:
         """

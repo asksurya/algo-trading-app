@@ -141,9 +141,9 @@ export default function TradesPage() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : trades && trades.length > 0 ? (
-            <div className="space-y-4">
-              {trades.map((trade) => {
+          ) : trades?.data && trades.data.length > 0 ? (
+            <div className="space-y-4" data-testid="trades-table">
+              {trades.data.map((trade) => {
                 const pnl = trade.realized_pnl ? parseFloat(trade.realized_pnl) : null;
                 const isBuy = trade.trade_type === 'buy';
                 

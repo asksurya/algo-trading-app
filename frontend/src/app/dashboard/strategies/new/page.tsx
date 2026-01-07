@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useCreateStrategy } from "@/lib/hooks/use-strategies";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { StrategyParameters } from "@/components/strategies/strategy-parameters";
+import { StrategyInfo } from "@/components/strategies/strategy-info";
 
 export default function NewStrategyPage() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function NewStrategyPage() {
     description: "",
     strategy_type: "momentum",
     tickers: "",
+    parameters: {} as Record<string, any>,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,7 +37,7 @@ export default function NewStrategyPage() {
         name: formData.name,
         description: formData.description || undefined,
         strategy_type: formData.strategy_type,
-        parameters: {}, // Basic empty parameters
+        parameters: formData.parameters,
         tickers: tickersArray.length > 0 ? tickersArray : undefined,
       },
       {
@@ -46,9 +49,23 @@ export default function NewStrategyPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
+    const updatedData = {
       ...formData,
       [e.target.name]: e.target.value,
+    };
+
+    // Reset parameters when strategy type changes
+    if (e.target.name === "strategy_type") {
+      updatedData.parameters = {};
+    }
+
+    setFormData(updatedData);
+  };
+
+  const handleParametersChange = (parameters: Record<string, any>) => {
+    setFormData({
+      ...formData,
+      parameters,
     });
   };
 
@@ -68,15 +85,16 @@ export default function NewStrategyPage() {
         </div>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Strategy Details</CardTitle>
-          <CardDescription>
-            Enter the details for your new trading strategy
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Strategy Details</CardTitle>
+            <CardDescription>
+              Enter the details for your new trading strategy
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Strategy Name *</Label>
               <Input
@@ -111,17 +129,30 @@ export default function NewStrategyPage() {
                 required
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <option value="momentum">Momentum</option>
-                <option value="mean_reversion">Mean Reversion</option>
-                <option value="macd">MACD</option>
-                <option value="rsi">RSI</option>
-                <option value="bollinger_bands">Bollinger Bands</option>
-                <option value="sma_crossover">SMA Crossover</option>
-                <option value="breakout">Breakout</option>
-                <option value="vwap">VWAP</option>
-                <option value="pairs_trading">Pairs Trading</option>
-                <option value="ml_strategy">ML Strategy</option>
-                <option value="adaptive_ml">Adaptive ML</option>
+                <optgroup label="Trend & Momentum">
+                  <option value="momentum">Momentum</option>
+                  <option value="sma_crossover">SMA Crossover</option>
+                  <option value="macd">MACD</option>
+                  <option value="breakout">Breakout</option>
+                  <option value="atr_trailing_stop">ATR Trailing Stop</option>
+                  <option value="donchian_channel">Donchian Channel (Turtle Trading)</option>
+                </optgroup>
+                <optgroup label="Mean Reversion & Oscillators">
+                  <option value="mean_reversion">Mean Reversion</option>
+                  <option value="rsi">RSI</option>
+                  <option value="stochastic">Stochastic Oscillator</option>
+                  <option value="bollinger_bands">Bollinger Bands</option>
+                  <option value="keltner_channel">Keltner Channel</option>
+                </optgroup>
+                <optgroup label="Multi-Indicator Systems">
+                  <option value="vwap">VWAP</option>
+                  <option value="ichimoku_cloud">Ichimoku Cloud</option>
+                </optgroup>
+                <optgroup label="Advanced">
+                  <option value="pairs_trading">Pairs Trading</option>
+                  <option value="ml_strategy">ML Strategy</option>
+                  <option value="adaptive_ml">Adaptive ML</option>
+                </optgroup>
               </select>
               <p className="text-xs text-muted-foreground">
                 Choose the type of trading strategy to implement
@@ -140,6 +171,14 @@ export default function NewStrategyPage() {
               <p className="text-xs text-muted-foreground">
                 Comma-separated list of stock tickers to trade with this strategy
               </p>
+            </div>
+
+            <div className="border-t pt-6">
+              <StrategyParameters
+                strategyType={formData.strategy_type}
+                parameters={formData.parameters}
+                onChange={handleParametersChange}
+              />
             </div>
 
             <div className="flex gap-4">
@@ -166,6 +205,21 @@ export default function NewStrategyPage() {
           </form>
         </CardContent>
       </Card>
+
+      <div className="space-y-4">
+        <StrategyInfo strategyType={formData.strategy_type} />
+
+        <Card className="p-4 bg-slate-50 border-slate-200">
+          <h4 className="font-bold text-slate-900 mb-2 text-sm">Getting Started</h4>
+          <ul className="text-xs text-slate-700 space-y-1">
+            <li>• Choose a strategy type that matches your trading style</li>
+            <li>• Configure parameters or use defaults</li>
+            <li>• Add tickers to apply this strategy to specific stocks</li>
+            <li>• Test your strategy with backtesting before going live</li>
+          </ul>
+        </Card>
+      </div>
+    </div>
     </div>
   );
 }

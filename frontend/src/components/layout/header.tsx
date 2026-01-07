@@ -26,6 +26,7 @@ export function Header() {
                 variant="ghost"
                 size="sm"
                 onClick={logout}
+                data-testid="logout-button"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout

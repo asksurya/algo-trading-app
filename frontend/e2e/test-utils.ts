@@ -12,6 +12,7 @@ export const selectors = {
   registerForm: '[data-testid="register-form"]',
   emailInput: '[data-testid="email-input"]',
   passwordInput: '[data-testid="password-input"]',
+  fullNameInput: '[data-testid="fullname-input"]',
   loginButton: '[data-testid="login-button"]',
   registerButton: '[data-testid="register-button"]',
   logoutButton: '[data-testid="logout-button"]',
@@ -54,7 +55,8 @@ export class AuthHelper {
     await this.page.waitForURL('**/dashboard');
   }
 
-  async register(email: string, password: string) {
+  async register(email: string, password: string, fullName: string = 'Test User') {
+    await this.page.fill(selectors.fullNameInput, fullName);
     await this.page.fill(selectors.emailInput, email);
     await this.page.fill(selectors.passwordInput, password);
     await this.page.click(selectors.registerButton);

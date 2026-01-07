@@ -17,14 +17,45 @@ from app.models.strategy import Strategy
 from app.services.market_data_cache_service import MarketDataCacheService
 
 # Import BacktestEngine and Strategies
+import sys
+from pathlib import Path
+
+# Add project root to path for src imports
+project_root = Path(__file__).resolve().parent.parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 try:
     from src.backtesting.backtest_engine import BacktestEngine
     from src.strategies.sma_crossover import SMACrossoverStrategy
     from src.strategies.rsi_strategy import RSIStrategy
-    # Add other strategies as needed
-except ImportError:
-    logging.warning("Could not import src.backtesting. Ensure PYTHONPATH includes the project root.")
+    from src.strategies.keltner_channel import KeltnerChannelStrategy
+    from src.strategies.donchian_channel import DonchianChannelStrategy
+    from src.strategies.ichimoku_cloud import IchimokuCloudStrategy
+    from src.strategies.macd_strategy import MACDStrategy
+    from src.strategies.bollinger_bands import BollingerBandsStrategy
+    from src.strategies.vwap_strategy import VWAPStrategy
+    from src.strategies.momentum_strategy import MomentumStrategy
+    from src.strategies.mean_reversion import MeanReversionStrategy
+    from src.strategies.breakout_strategy import BreakoutStrategy
+    from src.strategies.atr_trailing_stop import ATRTrailingStopStrategy
+    from src.strategies.stochastic_strategy import StochasticStrategy
+except ImportError as e:
+    logging.error(f"Could not import src.backtesting: {e}")
     BacktestEngine = None
+    SMACrossoverStrategy = None
+    RSIStrategy = None
+    KeltnerChannelStrategy = None
+    DonchianChannelStrategy = None
+    IchimokuCloudStrategy = None
+    MACDStrategy = None
+    BollingerBandsStrategy = None
+    VWAPStrategy = None
+    MomentumStrategy = None
+    MeanReversionStrategy = None
+    BreakoutStrategy = None
+    ATRTrailingStopStrategy = None
+    StochasticStrategy = None
 
 logger = logging.getLogger(__name__)
 
@@ -175,32 +206,124 @@ class BacktestRunner:
 
     def _create_strategy_instance(self, strategy_model: Strategy):
         """Factory method to create strategy instance from model."""
-        strategy_type = strategy_model.strategy_type.lower()
+        strategy_type = strategy_model.strategy_type.lower().replace("_", "")
         params = strategy_model.parameters or {}
-        
+
         # Remove 'symbol' from params if it exists, as it's not a strategy init param usually
         # (It depends on the strategy __init__)
         init_params = params.copy()
         if "symbol" in init_params:
             del init_params["symbol"]
-            
-        if strategy_type == "sma_crossover":
+
+        if strategy_type == "smacrossover":
+            if SMACrossoverStrategy is None:
+                raise ImportError("SMACrossoverStrategy not available")
             return SMACrossoverStrategy(
                 short_window=int(init_params.get("short_window", 50)),
                 long_window=int(init_params.get("long_window", 200))
             )
         elif strategy_type == "rsi":
-            # Assuming RSIStrategy has period, overbought, oversold
+            if RSIStrategy is None:
+                raise ImportError("RSIStrategy not available")
             return RSIStrategy(
                 period=int(init_params.get("period", 14)),
                 overbought=int(init_params.get("overbought", 70)),
                 oversold=int(init_params.get("oversold", 30))
             )
+        elif strategy_type == "keltnerchannel":
+            if KeltnerChannelStrategy is None:
+                raise ImportError("KeltnerChannelStrategy not available")
+            return KeltnerChannelStrategy(
+                ema_period=int(init_params.get("ema_period", 20)),
+                atr_period=int(init_params.get("atr_period", 10)),
+                multiplier=float(init_params.get("multiplier", 2.0)),
+                use_breakout=init_params.get("use_breakout", True)
+            )
+        elif strategy_type == "donchianchannel":
+            if DonchianChannelStrategy is None:
+                raise ImportError("DonchianChannelStrategy not available")
+            return DonchianChannelStrategy(
+                entry_period=int(init_params.get("entry_period", 20)),
+                exit_period=int(init_params.get("exit_period", 10)),
+                atr_period=int(init_params.get("atr_period", 20)),
+                use_system_2=init_params.get("use_system_2", False)
+            )
+        elif strategy_type == "ichimokucloud":
+            if IchimokuCloudStrategy is None:
+                raise ImportError("IchimokuCloudStrategy not available")
+            return IchimokuCloudStrategy(
+                tenkan_period=int(init_params.get("tenkan_period", 9)),
+                kijun_period=int(init_params.get("kijun_period", 26)),
+                senkou_b_period=int(init_params.get("senkou_b_period", 52)),
+                displacement=int(init_params.get("displacement", 26))
+            )
+        elif strategy_type == "macd":
+            if MACDStrategy is None:
+                raise ImportError("MACDStrategy not available")
+            return MACDStrategy(
+                fast_period=int(init_params.get("fast_period", 12)),
+                slow_period=int(init_params.get("slow_period", 26)),
+                signal_period=int(init_params.get("signal_period", 9))
+            )
+        elif strategy_type == "bollingerbands":
+            if BollingerBandsStrategy is None:
+                raise ImportError("BollingerBandsStrategy not available")
+            return BollingerBandsStrategy(
+                period=int(init_params.get("period", 20)),
+                std_dev=float(init_params.get("std_dev", 2.0))
+            )
+        elif strategy_type == "vwap":
+            if VWAPStrategy is None:
+                raise ImportError("VWAPStrategy not available")
+            return VWAPStrategy(
+                period=int(init_params.get("period", 20))
+            )
+        elif strategy_type == "momentum":
+            if MomentumStrategy is None:
+                raise ImportError("MomentumStrategy not available")
+            return MomentumStrategy(
+                period=int(init_params.get("period", 20)),
+                threshold=float(init_params.get("threshold", 0.0))
+            )
+        elif strategy_type == "meanreversion":
+            if MeanReversionStrategy is None:
+                raise ImportError("MeanReversionStrategy not available")
+            return MeanReversionStrategy(
+                period=int(init_params.get("period", 20)),
+                entry_threshold=float(init_params.get("entry_threshold", 2.0)),
+                exit_threshold=float(init_params.get("exit_threshold", 0.5))
+            )
+        elif strategy_type == "breakout":
+            if BreakoutStrategy is None:
+                raise ImportError("BreakoutStrategy not available")
+            return BreakoutStrategy(
+                lookback_period=int(init_params.get("lookback_period", 20)),
+                breakout_threshold=float(init_params.get("breakout_threshold", 0.02))
+            )
+        elif strategy_type == "attrailingstop":
+            if ATRTrailingStopStrategy is None:
+                raise ImportError("ATRTrailingStopStrategy not available")
+            return ATRTrailingStopStrategy(
+                atr_period=int(init_params.get("atr_period", 14)),
+                atr_multiplier=float(init_params.get("atr_multiplier", 2.0))
+            )
+        elif strategy_type == "stochastic":
+            if StochasticStrategy is None:
+                raise ImportError("StochasticStrategy not available")
+            return StochasticStrategy(
+                k_period=int(init_params.get("k_period", 14)),
+                d_period=int(init_params.get("d_period", 3)),
+                overbought=int(init_params.get("overbought", 80)),
+                oversold=int(init_params.get("oversold", 20))
+            )
         else:
-            # Fallback or error
-            # For now, default to SMA if unknown, or raise error
-            logger.warning(f"Unknown strategy type {strategy_type}, defaulting to SMA")
-            return SMACrossoverStrategy()
+            # Raise error for unknown strategy type
+            raise ValueError(
+                f"Unknown strategy type '{strategy_model.strategy_type}'. "
+                f"Supported types: sma_crossover, rsi, macd, bollinger_bands, vwap, momentum, "
+                f"mean_reversion, breakout, keltner_channel, donchian_channel, ichimoku_cloud, "
+                f"atr_trailing_stop, stochastic"
+            )
 
     async def _store_results(
         self,

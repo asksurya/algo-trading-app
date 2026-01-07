@@ -24,16 +24,65 @@ async def lifespan(app: FastAPI):
     """
     # Startup
     await init_db()
-    
-    # Start strategy scheduler
+
+    # Start legacy strategy scheduler
     from app.strategies.scheduler import start_scheduler
     start_scheduler()
-    
+
+    # Start live trading scheduler
+    import asyncio
+    from app.services.strategy_scheduler import StrategyScheduler
+    from app.integrations.alpaca_client import AlpacaClient
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker, Session
+
+    # Create sync database session for scheduler (scheduler uses sync SQLAlchemy queries)
+    # Convert async SQLite URL to sync: sqlite+aiosqlite:// -> sqlite://
+    sync_db_url = settings.DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
+    sync_engine = create_engine(sync_db_url, connect_args={"check_same_thread": False})
+    SyncSessionLocal = sessionmaker(bind=sync_engine, autocommit=False, autoflush=False)
+    scheduler_db = SyncSessionLocal()
+
+    # Create Alpaca client for live trading
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("Initializing live trading scheduler")
+    alpaca_client = AlpacaClient()
+
+    # Create and start live scheduler
+    live_scheduler = StrategyScheduler(db=scheduler_db, alpaca_client=alpaca_client)
+
+    # Start monitoring in background task
+    async def start_scheduler_with_logging():
+        try:
+            logger.info("Live trading scheduler monitoring started")
+            await live_scheduler.start_monitoring()
+        except Exception as e:
+            logger.error(f"CRITICAL: Scheduler monitoring failed: {e}", exc_info=True)
+
+    monitoring_task = asyncio.create_task(start_scheduler_with_logging())
+
+    # Give the task a moment to start
+    await asyncio.sleep(0.5)
+
+    logger.info("Live trading scheduler initialized successfully")
+
     yield
-    
+
     # Shutdown
     from app.strategies.scheduler import stop_scheduler
     stop_scheduler()
+
+    # Stop live trading scheduler
+    live_scheduler.stop_monitoring()
+    monitoring_task.cancel()
+    try:
+        await monitoring_task
+    except asyncio.CancelledError:
+        pass
+    scheduler_db.close()
+    sync_engine.dispose()
+
     await close_db()
 
 
@@ -49,8 +98,8 @@ app = FastAPI(
 )
 
 # Configure CORS
-# In development, allow all origins. In production, use settings.ALLOWED_ORIGINS
-cors_origins = ["*"] if settings.is_development else settings.ALLOWED_ORIGINS
+# In development, allow all origins. In production, use settings.allowed_origins_list
+cors_origins = ["*"] if settings.is_development else settings.allowed_origins_list
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,

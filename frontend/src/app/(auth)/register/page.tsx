@@ -18,10 +18,12 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       await register({ email, password, full_name: fullName });
@@ -56,6 +58,7 @@ export default function RegisterPage() {
         errorMessage = error.message;
       }
 
+      setError(errorMessage);
       toast({
         title: "Registration Failed",
         description: errorMessage,
@@ -74,12 +77,21 @@ export default function RegisterPage() {
           Enter your information to create your account
         </CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} data-testid="register-form">
         <CardContent className="space-y-4">
+          {error && (
+            <div
+              data-testid="error-message"
+              className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md"
+            >
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
+              data-testid="fullname-input"
               type="text"
               placeholder="John Doe"
               value={fullName}

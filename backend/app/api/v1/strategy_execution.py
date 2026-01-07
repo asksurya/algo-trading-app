@@ -37,9 +37,11 @@ async def start_strategy_execution(
     Creates or activates StrategyExecution record for the strategy.
     """
     # Verify strategy exists and belongs to user
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
 
@@ -52,33 +54,31 @@ async def start_strategy_execution(
     # Check if execution already exists
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
 
     if execution:
         # Reactivate existing execution
-        if execution.is_active:
+        if execution.state == ExecutionState.ACTIVE:
             return {
                 "success": True,
                 "message": "Strategy execution already active",
                 "data": {
                     "strategy_id": str(strategy_id),
                     "state": execution.state.value,
-                    "is_active": execution.is_active,
+                    "is_active": execution.state == ExecutionState.ACTIVE,
                 }
             }
 
-        execution.is_active = True
-        execution.state = ExecutionState.RUNNING
-        execution.error_message = None
+        execution.state = ExecutionState.ACTIVE
+        execution.last_error = None
         execution.error_count = 0
     else:
         # Create new execution
         execution = StrategyExecution(
-            strategy_id=strategy_id,
-            is_active=True,
-            state=ExecutionState.RUNNING,
+            strategy_id=strategy_id_str,
+            state=ExecutionState.ACTIVE,
         )
         session.add(execution)
 
@@ -97,7 +97,7 @@ async def start_strategy_execution(
             "strategy_id": str(strategy_id),
             "execution_id": str(execution.id),
             "state": execution.state.value,
-            "is_active": execution.is_active,
+            "is_active": execution.state == ExecutionState.ACTIVE,
         }
     }
 
@@ -110,37 +110,39 @@ async def stop_strategy_execution(
 ):
     """
     Stop automated execution for a strategy.
-    
+
     Deactivates the StrategyExecution record.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get execution
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
     
-    if not execution or not execution.is_active:
+    if not execution or execution.state != ExecutionState.ACTIVE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Strategy execution not active"
         )
-    
-    execution.is_active = False
-    execution.state = ExecutionState.STOPPED
+
+    execution.state = ExecutionState.PAUSED
     
     await session.commit()
     
@@ -150,7 +152,7 @@ async def stop_strategy_execution(
         "data": {
             "strategy_id": str(strategy_id),
             "state": execution.state.value,
-            "is_active": execution.is_active,
+            "is_active": execution.state == ExecutionState.ACTIVE,
         }
     }
 
@@ -163,26 +165,29 @@ async def get_strategy_execution_status(
 ):
     """
     Get execution status for a strategy.
-    
+
     Returns current state, metrics, and last execution details.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get execution
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
     
@@ -202,20 +207,18 @@ async def get_strategy_execution_status(
         "data": {
             "strategy_id": str(strategy_id),
             "execution_id": str(execution.id),
-            "is_active": execution.is_active,
+            "is_active": execution.state == ExecutionState.ACTIVE,
             "state": execution.state.value,
-            "current_position": execution.current_position,
-            "entry_price": float(execution.entry_price) if execution.entry_price else None,
-            "current_pnl": float(execution.current_pnl) if execution.current_pnl else 0.0,
-            "total_pnl": float(execution.total_pnl) if execution.total_pnl else 0.0,
+            "has_open_position": execution.has_open_position,
+            "current_position_qty": float(execution.current_position_qty) if execution.current_position_qty else None,
+            "entry_price": float(execution.current_position_entry_price) if execution.current_position_entry_price else None,
             "trades_today": execution.trades_today,
-            "total_trades": execution.total_trades,
-            "win_rate": float(execution.win_rate) if execution.win_rate else 0.0,
+            "loss_today": float(execution.loss_today) if execution.loss_today else 0.0,
             "last_evaluated_at": execution.last_evaluated_at.isoformat() if execution.last_evaluated_at else None,
             "last_signal_at": execution.last_signal_at.isoformat() if execution.last_signal_at else None,
-            "evaluation_count": execution.evaluation_count,
+            "last_trade_at": execution.last_trade_at.isoformat() if execution.last_trade_at else None,
             "error_count": execution.error_count,
-            "error_message": execution.error_message,
+            "last_error": execution.last_error,
         }
     }
 
@@ -229,26 +232,29 @@ async def get_strategy_signals(
 ):
     """
     Get recent signals generated by a strategy.
-    
+
     Returns list of signals with timestamps and reasoning.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get execution
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
     
@@ -302,26 +308,29 @@ async def get_strategy_performance(
 ):
     """
     Get performance metrics for a strategy.
-    
+
     Returns daily and cumulative performance statistics.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get execution
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
     
@@ -348,24 +357,32 @@ async def get_strategy_performance(
     )
     daily_performance = result.scalars().all()
     
+    # Aggregate performance from daily records
+    total_pnl = sum(perf.total_pnl for perf in daily_performance)
+    total_trades = sum(perf.total_trades for perf in daily_performance)
+    winning_trades = sum(perf.winning_trades for perf in daily_performance)
+    losing_trades = sum(perf.losing_trades for perf in daily_performance)
+    win_rate = (winning_trades / total_trades * 100) if total_trades > 0 else 0.0
+
     return {
         "success": True,
         "data": {
             "strategy_id": str(strategy_id),
             "performance": {
-                "total_pnl": float(execution.total_pnl) if execution.total_pnl else 0.0,
-                "total_trades": execution.total_trades,
-                "winning_trades": execution.winning_trades,
-                "losing_trades": execution.losing_trades,
-                "win_rate": float(execution.win_rate) if execution.win_rate else 0.0,
-                "current_pnl": float(execution.current_pnl) if execution.current_pnl else 0.0,
+                "total_pnl": total_pnl,
+                "total_trades": total_trades,
+                "winning_trades": winning_trades,
+                "losing_trades": losing_trades,
+                "win_rate": win_rate,
+                "trades_today": execution.trades_today,
+                "loss_today": float(execution.loss_today) if execution.loss_today else 0.0,
             },
             "daily": [
                 {
                     "date": perf.date.isoformat(),
-                    "pnl": float(perf.pnl),
-                    "return_pct": float(perf.return_pct) if perf.return_pct else 0.0,
-                    "trades": perf.trades,
+                    "pnl": float(perf.total_pnl),
+                    "return_pct": float(perf.win_rate) if perf.win_rate else 0.0,
+                    "trades": perf.total_trades,
                     "winning_trades": perf.winning_trades,
                     "losing_trades": perf.losing_trades,
                 }
@@ -383,35 +400,38 @@ async def test_strategy_execution(
 ):
     """
     Test strategy execution without placing real orders (dry run).
-    
+
     Evaluates strategy and returns what signal would be generated.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get or create execution record for test mode
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
 
     # Create a temporary execution for dry run if none exists
     if not execution:
         execution = StrategyExecution(
-            strategy_id=strategy_id,
+            strategy_id=strategy_id_str,
             is_active=False,
-            state=ExecutionState.IDLE,
+            state=ExecutionState.INACTIVE,
         )
         session.add(execution)
         await session.flush()
@@ -453,53 +473,49 @@ async def reset_strategy_execution(
 ):
     """
     Reset strategy execution state.
-    
+
     Clears counters, positions, and performance metrics.
     Useful for restarting after errors or testing.
     """
+    # Convert UUID to string for VARCHAR column comparison
+    strategy_id_str = str(strategy_id)
+
     # Verify strategy belongs to user
     result = await session.execute(
         select(Strategy)
-        .where(and_(Strategy.id == strategy_id, Strategy.user_id == current_user.id))
+        .where(and_(Strategy.id == strategy_id_str, Strategy.user_id == current_user.id))
     )
     strategy = result.scalar_one_or_none()
-    
+
     if not strategy:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy not found"
         )
-    
+
     # Get execution
     result = await session.execute(
         select(StrategyExecution)
-        .where(StrategyExecution.strategy_id == strategy_id)
+        .where(StrategyExecution.strategy_id == strategy_id_str)
     )
     execution = result.scalar_one_or_none()
-    
+
     if not execution:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Strategy execution not found"
         )
-    
+
     # Reset execution state
-    execution.state = ExecutionState.IDLE
-    execution.is_active = False
-    execution.current_position = None
-    execution.entry_price = None
-    execution.current_pnl = 0.0
-    execution.total_pnl = 0.0
+    execution.state = ExecutionState.INACTIVE
+    execution.has_open_position = False
+    execution.current_position_qty = None
+    execution.current_position_entry_price = None
     execution.trades_today = 0
-    execution.total_trades = 0
-    execution.winning_trades = 0
-    execution.losing_trades = 0
-    execution.win_rate = 0.0
-    execution.daily_pnl = 0.0
-    execution.daily_loss = 0.0
+    execution.loss_today = 0.0
+    execution.consecutive_losses = 0
     execution.error_count = 0
-    execution.error_message = None
-    execution.evaluation_count = 0
+    execution.last_error = None
     
     await session.commit()
     
@@ -509,7 +525,7 @@ async def reset_strategy_execution(
         "data": {
             "strategy_id": str(strategy_id),
             "state": execution.state.value,
-            "is_active": execution.is_active,
+            "is_active": execution.state == ExecutionState.ACTIVE,
         }
     }
 

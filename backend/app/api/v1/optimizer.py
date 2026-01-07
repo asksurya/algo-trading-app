@@ -2,15 +2,19 @@
 API endpoints for strategy optimizer.
 Handles multi-ticker analysis and automated trading execution.
 """
+import logging
 from typing import Dict, Any
 from uuid import uuid4
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
+from app.models.enums import NotificationType, NotificationPriority
 from app.services.strategy_optimizer import StrategyOptimizer
 from app.services.risk_manager import RiskManager
 from app.services.notification_service import NotificationService
@@ -27,7 +31,7 @@ from app.schemas.optimizer import (
     OptimizationResultSchema
 )
 
-router = APIRouter(prefix="/optimizer", tags=["optimizer"])
+router = APIRouter(tags=["optimizer"])
 
 # In-memory job storage (in production, use Redis or database)
 _optimization_jobs: Dict[str, Dict[str, Any]] = {}
@@ -55,102 +59,108 @@ async def get_optimizer_service(
 async def run_optimization_job(
     job_id: str,
     user_id: int,
-    request: OptimizeStrategyRequest,
-    db: AsyncSession
+    request: OptimizeStrategyRequest
 ):
     """Background task to run optimization."""
-    try:
-        # Update job status
-        _optimization_jobs[job_id]["status"] = "running"
-        _optimization_jobs[job_id]["current_step"] = "Initializing"
-        
-        # Get optimizer service
-        alpaca = get_alpaca_client()
-        risk_manager = RiskManager(db, alpaca)
-        notification_service = NotificationService(db)
-        order_execution = AlpacaOrderExecutor()
-        order_execution.set_db_session(db)
-        
-        optimizer = StrategyOptimizer(
-            db=db,
-            alpaca_client=alpaca,
-            risk_manager=risk_manager,
-            notification_service=notification_service,
-            order_execution=order_execution
-        )
-        
-        # Run optimization
-        _optimization_jobs[job_id]["current_step"] = "Running backtests"
-        results = await optimizer.optimize_strategies(
-            user_id=user_id,
-            symbols=request.symbols,
-            strategy_ids=request.strategy_ids,
-            start_date=request.start_date,
-            end_date=request.end_date,
-            initial_capital=request.initial_capital
-        )
-        
-        # Convert results to schemas
-        result_schemas = {}
-        for symbol, opt_result in results.items():
-            performances = [
-                StrategyPerformanceSchema(
-                    strategy_id=p.strategy_id,
-                    strategy_name=p.strategy_name,
-                    symbol=p.symbol,
-                    backtest_id=p.backtest_id,
-                    total_return=p.total_return,
-                    sharpe_ratio=p.sharpe_ratio,
-                    max_drawdown=p.max_drawdown,
-                    win_rate=p.win_rate,
-                    total_trades=p.total_trades,
-                    net_profit=p.net_profit,
-                    composite_score=p.composite_score,
-                    rank=p.rank
-                )
-                for p in opt_result.all_performances
-            ]
-            
-            result_schemas[symbol] = OptimizationResultSchema(
-                symbol=opt_result.symbol,
-                best_strategy=performances[0] if performances else None,
-                all_performances=performances,
-                analysis_date=opt_result.analysis_date
+    # Create a new database session for this background task
+    from app.database import get_db_context
+
+    async with get_db_context() as db:
+        try:
+            # Update job status
+            _optimization_jobs[job_id]["status"] = "running"
+            _optimization_jobs[job_id]["current_step"] = "Initializing"
+
+            # Get optimizer service
+            alpaca = get_alpaca_client()
+            risk_manager = RiskManager(db, alpaca)
+            notification_service = NotificationService(db)
+            order_execution = AlpacaOrderExecutor()
+            order_execution.set_db_session(db)
+
+            optimizer = StrategyOptimizer(
+                db=db,
+                alpaca_client=alpaca,
+                risk_manager=risk_manager,
+                notification_service=notification_service,
+                order_execution=order_execution
             )
-        
-        # Update job with results
-        _optimization_jobs[job_id]["status"] = "completed"
-        _optimization_jobs[job_id]["results"] = result_schemas
-        _optimization_jobs[job_id]["completed_at"] = datetime.now(datetime.UTC)
-        _optimization_jobs[job_id]["progress"] = 100.0
-        _optimization_jobs[job_id]["results_available"] = True
-        _optimization_jobs[job_id]["current_step"] = "Complete"
-        
-        # Send notification
-        await notification_service.create_notification(
-            user_id=user_id,
-            title="Strategy Optimization Complete",
-            message=f"Analyzed {len(request.symbols)} symbols across all strategies",
-            notification_type="SYSTEM",
-            priority="medium",
-            metadata={"job_id": job_id}
-        )
-        
-    except Exception as e:
-        _optimization_jobs[job_id]["status"] = "failed"
-        _optimization_jobs[job_id]["error_message"] = str(e)
-        _optimization_jobs[job_id]["completed_at"] = datetime.now(datetime.UTC)
-        
-        # Send error notification
-        notification_service = NotificationService(db)
-        await notification_service.create_notification(
-            user_id=user_id,
-            title="Strategy Optimization Failed",
-            message=f"Error: {str(e)}",
-            notification_type="SYSTEM",
-            priority="high",
-            metadata={"job_id": job_id}
-        )
+
+            # Run optimization
+            _optimization_jobs[job_id]["current_step"] = "Running backtests"
+            results = await optimizer.optimize_strategies(
+                user_id=user_id,
+                symbols=request.symbols,
+                strategy_ids=request.strategy_ids,
+                start_date=request.start_date,
+                end_date=request.end_date,
+                initial_capital=request.initial_capital
+            )
+
+            # Convert results to schemas
+            result_schemas = {}
+            for symbol, opt_result in results.items():
+                performances = [
+                    StrategyPerformanceSchema(
+                        strategy_id=p.strategy_id,
+                        strategy_name=p.strategy_name,
+                        symbol=p.symbol,
+                        backtest_id=p.backtest_id,
+                        total_return=p.total_return,
+                        sharpe_ratio=p.sharpe_ratio,
+                        max_drawdown=p.max_drawdown,
+                        win_rate=p.win_rate,
+                        total_trades=p.total_trades,
+                        net_profit=p.net_profit,
+                        composite_score=p.composite_score,
+                        rank=p.rank
+                    )
+                    for p in opt_result.all_performances
+                ]
+
+                result_schemas[symbol] = OptimizationResultSchema(
+                    symbol=opt_result.symbol,
+                    best_strategy=performances[0] if performances else None,
+                    all_performances=performances,
+                    analysis_date=opt_result.analysis_date
+                )
+
+            # Update job with results
+            _optimization_jobs[job_id]["status"] = "completed"
+            _optimization_jobs[job_id]["results"] = result_schemas
+            _optimization_jobs[job_id]["completed_at"] = datetime.now(timezone.utc)
+            _optimization_jobs[job_id]["progress"] = 100.0
+            _optimization_jobs[job_id]["results_available"] = True
+            _optimization_jobs[job_id]["current_step"] = "Complete"
+
+            # Send notification
+            await notification_service.create_notification(
+                user_id=user_id,
+                notification_type=NotificationType.SYSTEM_ALERT,
+                title="Strategy Optimization Complete",
+                message=f"Analyzed {len(request.symbols)} symbols across all strategies",
+                priority=NotificationPriority.MEDIUM.value,
+                data={"job_id": job_id}
+            )
+
+        except Exception as e:
+            logger.error(f"Optimization job {job_id} failed: {e}", exc_info=True)
+            _optimization_jobs[job_id]["status"] = "failed"
+            _optimization_jobs[job_id]["error_message"] = str(e)
+            _optimization_jobs[job_id]["completed_at"] = datetime.now(timezone.utc)
+
+            # Send error notification
+            try:
+                await notification_service.create_notification(
+                    user_id=user_id,
+                    notification_type=NotificationType.SYSTEM_ALERT,
+                    title="Strategy Optimization Failed",
+                    message=f"Error: {str(e)}",
+                    priority=NotificationPriority.HIGH.value,
+                    data={"job_id": job_id}
+                )
+            except Exception as notif_error:
+                logger.error(f"Failed to send error notification: {notif_error}")
 
 
 @router.post("/analyze", response_model=OptimizeStrategyResponse)
@@ -167,9 +177,17 @@ async def analyze_strategies(
     # Validate symbols
     if not request.symbols:
         raise HTTPException(status_code=400, detail="At least one symbol required")
-    
+
+    # Ensure dates are timezone-aware for comparison
+    start_date = request.start_date
+    end_date = request.end_date
+    if start_date.tzinfo is None:
+        start_date = start_date.replace(tzinfo=timezone.utc)
+    if end_date.tzinfo is None:
+        end_date = end_date.replace(tzinfo=timezone.utc)
+
     # Basic validation
-    date_range = request.end_date - request.start_date
+    date_range = end_date - start_date
     if date_range.days < 1:
         raise HTTPException(
             status_code=400,
@@ -195,7 +213,7 @@ async def analyze_strategies(
         "status": "pending",
         "progress": 0.0,
         "current_step": "Pending",
-        "started_at": datetime.now(datetime.UTC),
+        "started_at": datetime.now(timezone.utc),
         "completed_at": None,
         "error_message": None,
         "results_available": False,
@@ -210,8 +228,7 @@ async def analyze_strategies(
         run_optimization_job,
         job_id,
         current_user.id,
-        request,
-        db
+        request
     )
     
     return OptimizeStrategyResponse(
@@ -221,7 +238,7 @@ async def analyze_strategies(
         total_symbols=len(request.symbols),
         total_strategies=len(request.strategy_ids) if request.strategy_ids else 0,
         total_backtests=total_backtests,
-        started_at=datetime.now(datetime.UTC)
+        started_at=datetime.now(timezone.utc)
     )
 
 
@@ -363,7 +380,7 @@ async def execute_optimal_strategies(
     
     return ExecuteOptimalResponse(
         job_id=str(uuid4()),
-        executed_at=datetime.now(datetime.UTC),
+        executed_at=datetime.now(timezone.utc),
         successful=execution_results["successful"],
         failed=execution_results["failed"],
         blocked=execution_results["blocked"],

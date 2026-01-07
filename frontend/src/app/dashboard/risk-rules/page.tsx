@@ -61,7 +61,7 @@ export default function RiskRulesPage() {
   const { data: rules, isLoading } = useQuery<RiskRule[]>({
     queryKey: ["risk-rules"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const response = await fetch("http://localhost:8000/api/v1/risk-rules", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -73,7 +73,7 @@ export default function RiskRulesPage() {
   // Create risk rule mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const response = await fetch("http://localhost:8000/api/v1/risk-rules", {
         method: "POST",
         headers: {
@@ -95,7 +95,7 @@ export default function RiskRulesPage() {
   // Delete risk rule mutation
   const deleteMutation = useMutation({
     mutationFn: async (ruleId: string) => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("access_token");
       const response = await fetch(`http://localhost:8000/api/v1/risk-rules/${ruleId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },

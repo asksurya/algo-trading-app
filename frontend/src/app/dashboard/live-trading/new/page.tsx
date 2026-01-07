@@ -231,7 +231,7 @@ export default function NewLiveStrategyPage() {
                     min="0.1"
                     max="50"
                     step="0.1"
-                    value={formData.position_size_pct * 100}
+                    value={(formData.position_size_pct ?? 0.05) * 100}
                     onChange={(e) => setFormData({ ...formData, position_size_pct: parseFloat(e.target.value) / 100 })}
                     className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />

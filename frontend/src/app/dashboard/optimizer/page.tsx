@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DeployToLiveButton } from '@/components/deploy-to-live-button';
 import {
   Table,
   TableBody,
@@ -226,7 +227,7 @@ export default function OptimizerPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="optimizer-page-container">
       <div>
         <h1 className="text-3xl font-bold">Strategy Optimizer</h1>
         <p className="text-muted-foreground">
@@ -235,20 +236,20 @@ export default function OptimizerPage() {
       </div>
 
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" data-testid="optimizer-error-message">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {success && (
-        <Alert>
+        <Alert data-testid="optimizer-success-message">
           <CheckCircle2 className="h-4 w-4" />
           <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 
-      <Card>
+      <Card data-testid="optimizer-config-card">
         <CardHeader>
           <CardTitle>Analysis Configuration</CardTitle>
           <CardDescription>
@@ -260,6 +261,7 @@ export default function OptimizerPage() {
             <Label htmlFor="symbols">Ticker Symbols (comma-separated)</Label>
             <Input
               id="symbols"
+              data-testid="optimizer-symbols-input"
               placeholder="AAPL, GOOGL, MSFT, TSLA"
               value={symbols}
               onChange={(e) => setSymbols(e.target.value.toUpperCase())}
@@ -275,6 +277,7 @@ export default function OptimizerPage() {
               <Label htmlFor="startDate">Start Date</Label>
               <Input
                 id="startDate"
+                data-testid="optimizer-start-date-input"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -285,6 +288,7 @@ export default function OptimizerPage() {
               <Label htmlFor="endDate">End Date</Label>
               <Input
                 id="endDate"
+                data-testid="optimizer-end-date-input"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -298,6 +302,7 @@ export default function OptimizerPage() {
               <Label htmlFor="capital">Initial Capital ($)</Label>
               <Input
                 id="capital"
+                data-testid="optimizer-capital-input"
                 type="number"
                 value={initialCapital}
                 onChange={(e) => setInitialCapital(e.target.value)}
@@ -308,6 +313,7 @@ export default function OptimizerPage() {
               <Label htmlFor="maxPosition">Max Position Size (%)</Label>
               <Input
                 id="maxPosition"
+                data-testid="optimizer-max-position-input"
                 type="number"
                 value={maxPositionPct}
                 onChange={(e) => setMaxPositionPct(e.target.value)}
@@ -323,15 +329,15 @@ export default function OptimizerPage() {
             <Select
               onValueChange={(value) => {
                 const id = parseInt(value);
-                setSelectedStrategies(prev => 
-                  prev.includes(id) 
+                setSelectedStrategies(prev =>
+                  prev.includes(id)
                     ? prev.filter(i => i !== id)
                     : [...prev, id]
                 );
               }}
               disabled={loading || polling}
             >
-              <SelectTrigger>
+              <SelectTrigger data-testid="optimizer-strategies-select">
                 <SelectValue placeholder="Select strategies" />
               </SelectTrigger>
               <SelectContent>
@@ -366,10 +372,11 @@ export default function OptimizerPage() {
             onClick={handleAnalyze}
             disabled={loading || polling}
             className="w-full"
+            data-testid="optimizer-analyze-button"
           >
             {loading || polling ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" data-testid="optimizer-loading-spinner" />
                 {polling ? `Analyzing... ${progress.toFixed(0)}%` : 'Starting...'}
               </>
             ) : (
@@ -390,7 +397,7 @@ export default function OptimizerPage() {
 
       {results && Object.keys(results).length > 0 && (
         <>
-          <Card>
+          <Card data-testid="optimizer-results-card">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Optimization Results</CardTitle>
@@ -402,6 +409,7 @@ export default function OptimizerPage() {
                 onClick={() => handleExecute()}
                 disabled={executing}
                 size="lg"
+                data-testid="optimizer-execute-all-button"
               >
                 {executing ? (
                   <>
@@ -427,7 +435,8 @@ export default function OptimizerPage() {
                 </TabsList>
                 {Object.entries(results).map(([symbol, result]) => (
                   <TabsContent key={symbol} value={symbol} className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {result.best_strategy && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4" data-testid="optimizer-strategy-cards">
                       <Card>
                         <CardHeader className="pb-2">
                           <CardDescription>Best Strategy</CardDescription>
@@ -442,7 +451,7 @@ export default function OptimizerPage() {
                           <CardDescription>Composite Score</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <div className="text-2xl font-bold">{result.best_strategy.composite_score.toFixed(2)}</div>
+                          <div className="text-2xl font-bold">{(result.best_strategy.composite_score ?? 0).toFixed(2)}</div>
                         </CardContent>
                       </Card>
                       <Card>
@@ -465,12 +474,14 @@ export default function OptimizerPage() {
                         </CardContent>
                       </Card>
                     </div>
+                    )}
 
                     <div className="flex justify-end">
                       <Button
                         onClick={() => handleExecute([symbol])}
                         disabled={executing}
                         variant="outline"
+                        data-testid={`optimizer-execute-symbol-${symbol}`}
                       >
                         {executing ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -483,7 +494,7 @@ export default function OptimizerPage() {
 
                     <div>
                       <h3 className="text-lg font-semibold mb-2">All Strategy Performance</h3>
-                      <Table>
+                      <Table data-testid="optimizer-results-table">
                         <TableHeader>
                           <TableRow>
                             <TableHead>Rank</TableHead>
@@ -494,10 +505,11 @@ export default function OptimizerPage() {
                             <TableHead className="text-right">Max DD</TableHead>
                             <TableHead className="text-right">Win Rate</TableHead>
                             <TableHead className="text-right">Trades</TableHead>
+                            <TableHead>Action</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {result.all_performances.map((perf) => (
+                          {(result.all_performances ?? []).map((perf) => (
                             <TableRow key={perf.strategy_id} className={perf.rank === 1 ? 'bg-green-50' : ''}>
                               <TableCell>
                                 <Badge variant={perf.rank === 1 ? 'default' : 'outline'}>
@@ -505,7 +517,7 @@ export default function OptimizerPage() {
                                 </Badge>
                               </TableCell>
                               <TableCell className="font-medium">{perf.strategy_name}</TableCell>
-                              <TableCell className="text-right font-semibold">{perf.composite_score.toFixed(2)}</TableCell>
+                              <TableCell className="text-right font-semibold">{(perf.composite_score ?? 0).toFixed(2)}</TableCell>
                               <TableCell className={`text-right ${perf.total_return >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                 {perf.total_return.toFixed(2)}%
                               </TableCell>
@@ -513,6 +525,15 @@ export default function OptimizerPage() {
                               <TableCell className="text-right text-red-600">{perf.max_drawdown.toFixed(2)}%</TableCell>
                               <TableCell className="text-right">{perf.win_rate.toFixed(1)}%</TableCell>
                               <TableCell className="text-right">{perf.total_trades}</TableCell>
+                              <TableCell>
+                                <DeployToLiveButton
+                                  strategyId={String(perf.strategy_id)}
+                                  strategyName={perf.strategy_name}
+                                  symbols={[symbol]}
+                                  variant="outline"
+                                  size="sm"
+                                />
+                              </TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -525,7 +546,7 @@ export default function OptimizerPage() {
           </Card>
 
           {executionResults && (
-            <Card>
+            <Card data-testid="optimizer-execution-results-card">
               <CardHeader>
                 <CardTitle>Execution Results</CardTitle>
                 <CardDescription>
@@ -534,12 +555,12 @@ export default function OptimizerPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {executionResults.successful.length > 0 && (
-                  <div>
+                  <div data-testid="optimizer-execution-successful">
                     <h3 className="text-lg font-semibold mb-2 flex items-center text-green-600">
                       <CheckCircle2 className="mr-2 h-5 w-5" />
                       Successful ({executionResults.successful.length})
                     </h3>
-                    <Table>
+                    <Table data-testid="optimizer-successful-table">
                       <TableHeader>
                         <TableRow>
                           <TableHead>Symbol</TableHead>
@@ -567,7 +588,7 @@ export default function OptimizerPage() {
                 )}
 
                 {executionResults.blocked.length > 0 && (
-                  <div>
+                  <div data-testid="optimizer-execution-blocked">
                     <h3 className="text-lg font-semibold mb-2 flex items-center text-yellow-600">
                       <AlertTriangle className="mr-2 h-5 w-5" />
                       Blocked by Risk Rules ({executionResults.blocked.length})
@@ -592,7 +613,7 @@ export default function OptimizerPage() {
                 )}
 
                 {executionResults.failed.length > 0 && (
-                  <div>
+                  <div data-testid="optimizer-execution-failed">
                     <h3 className="text-lg font-semibold mb-2 flex items-center text-red-600">
                       <XCircle className="mr-2 h-5 w-5" />
                       Failed ({executionResults.failed.length})

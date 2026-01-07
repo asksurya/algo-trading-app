@@ -74,7 +74,7 @@ class NotificationService:
             select(NotificationPreference).where(
                 and_(
                     NotificationPreference.user_id == notification.user_id,
-                    NotificationPreference.type == notification.type,
+                    NotificationPreference.notification_type == notification.type,
                     NotificationPreference.is_enabled == True
                 )
             )

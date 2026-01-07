@@ -7,6 +7,7 @@ import { Plus, TrendingUp, TrendingDown, Loader2, Trash2 } from "lucide-react";
 import { useStrategies, useDeleteStrategy, useUpdateStrategy } from "@/lib/hooks/use-strategies";
 import { useCurrentPositions } from "@/lib/hooks/use-trades";
 import { Badge } from "@/components/ui/badge";
+import { DeployToLiveButton } from "@/components/deploy-to-live-button";
 
 export default function StrategiesPage() {
   const { data: strategies, isLoading } = useStrategies();
@@ -62,7 +63,7 @@ export default function StrategiesPage() {
           </p>
         </div>
         <Link href="/dashboard/strategies/new">
-          <Button>
+          <Button data-testid="create-strategy-button">
             <Plus className="mr-2 h-4 w-4" />
             New Strategy
           </Button>
@@ -74,7 +75,7 @@ export default function StrategiesPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : strategies && strategies.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="strategies-table">
           {strategies.map((strategy) => {
             const strategyPositions = getStrategyPositions(strategy.id);
             const pnl = calculateStrategyPnL(strategy.id);
@@ -138,24 +139,34 @@ export default function StrategiesPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2 mt-4">
-                    <Link href={`/dashboard/strategies/${strategy.id}`} className="flex-1">
-                      <Button className="w-full" variant="outline">
-                        View Details
+                  <div className="flex flex-col gap-2 mt-4">
+                    <div className="flex gap-2">
+                      <Link href={`/dashboard/strategies/${strategy.id}`} className="flex-1">
+                        <Button className="w-full" variant="outline">
+                          View Details
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDelete(strategy.id, strategy.name)}
+                        disabled={deleteStrategy.isPending}
+                      >
+                        {deleteStrategy.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        )}
                       </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDelete(strategy.id, strategy.name)}
-                      disabled={deleteStrategy.isPending}
-                    >
-                      {deleteStrategy.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      )}
-                    </Button>
+                    </div>
+                    <DeployToLiveButton
+                      strategyId={strategy.id}
+                      strategyName={strategy.name}
+                      symbols={['AAPL']}
+                      variant="default"
+                      size="default"
+                      className="w-full"
+                    />
                   </div>
                 </CardContent>
               </Card>

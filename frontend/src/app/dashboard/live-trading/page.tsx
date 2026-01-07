@@ -188,12 +188,12 @@ function StrategyCard({
         </div>
         <div className="flex gap-2">
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-            strategy.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-            strategy.status === 'PAUSED' ? 'bg-yellow-100 text-yellow-800' :
-            strategy.status === 'ERROR' ? 'bg-red-100 text-red-800' :
+            strategy.status === 'active' ? 'bg-green-100 text-green-800' :
+            strategy.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
+            strategy.status === 'error' ? 'bg-red-100 text-red-800' :
             'bg-gray-100 text-gray-800'
           }`}>
-            {strategy.status}
+            {strategy.status.toUpperCase()}
           </span>
         </div>
       </div>
@@ -213,14 +213,14 @@ function StrategyCard({
         </div>
         <div>
           <div className="text-gray-600">P&L</div>
-          <div className={`font-bold ${strategy.daily_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ${strategy.daily_pnl.toFixed(2)}
+          <div className={`font-bold ${(strategy.total_pnl || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            ${(strategy.total_pnl || 0).toFixed(2)}
           </div>
         </div>
       </div>
 
       <div className="flex gap-2">
-        {strategy.status === 'ACTIVE' ? (
+        {strategy.status === 'active' ? (
           <>
             <Button
               variant="outline"
@@ -239,7 +239,7 @@ function StrategyCard({
               Stop
             </Button>
           </>
-        ) : strategy.status === 'STOPPED' ? (
+        ) : strategy.status === 'stopped' ? (
           <Button
             size="sm"
             onClick={() => handleAction('start')}

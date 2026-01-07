@@ -296,10 +296,10 @@ class TechnicalIndicators:
     def calculate_vwap(df: pd.DataFrame) -> pd.Series:
         """
         Calculate Volume Weighted Average Price (VWAP).
-        
+
         Args:
             df: DataFrame with OHLCV data
-            
+
         Returns:
             Series with VWAP values
         """
@@ -310,7 +310,30 @@ class TechnicalIndicators:
         except Exception as e:
             logger.error(f"Error calculating VWAP: {e}")
             raise
-    
+
+    @staticmethod
+    def calculate_ichimoku(df: pd.DataFrame, tenkan_period: int = 9, kijun_period: int = 26,
+                           senkou_b_period: int = 52, displacement: int = 26) -> Dict[str, pd.Series]:
+        """Calculate all Ichimoku Cloud components."""
+        def midpoint(data, period):
+            high = data['high'].rolling(window=period).max()
+            low = data['low'].rolling(window=period).min()
+            return (high + low) / 2
+
+        tenkan = midpoint(df, tenkan_period)
+        kijun = midpoint(df, kijun_period)
+        senkou_a = ((tenkan + kijun) / 2).shift(displacement)
+        senkou_b = midpoint(df, senkou_b_period).shift(displacement)
+
+        return {
+            'tenkan_sen': tenkan,
+            'kijun_sen': kijun,
+            'senkou_span_a': senkou_a,
+            'senkou_span_b': senkou_b,
+            'future_senkou_a': (tenkan + kijun) / 2,
+            'future_senkou_b': midpoint(df, senkou_b_period)
+        }
+
     @staticmethod
     def calculate_all_for_strategy(
         df: pd.DataFrame,
@@ -379,7 +402,100 @@ class TechnicalIndicators:
                 # Calculate z-score
                 indicators['z_score'] = (df['close'] - indicators['sma']) / indicators['std']
                 indicators['z_score_current'] = float(indicators['z_score'].iloc[-1])
-            
+
+            elif strategy_type.upper() == 'STOCHASTIC':
+                k_period = parameters.get('k_period', 14)
+                d_period = parameters.get('d_period', 3)
+                smooth_k = parameters.get('smooth_k', 3)
+
+                stoch = TechnicalIndicators.calculate_stochastic(df, k_period, d_period)
+                indicators['stoch_k'] = stoch['k']
+                indicators['stoch_d'] = stoch['d']
+                indicators['stoch_k_current'] = float(stoch['k'].iloc[-1])
+                indicators['stoch_d_current'] = float(stoch['d'].iloc[-1])
+                indicators['stoch_k_prev'] = float(stoch['k'].iloc[-2]) if len(stoch['k']) > 1 else indicators['stoch_k_current']
+                indicators['stoch_d_prev'] = float(stoch['d'].iloc[-2]) if len(stoch['d']) > 1 else indicators['stoch_d_current']
+
+            elif strategy_type.upper() == 'KELTNER_CHANNEL':
+                ema_period = parameters.get('ema_period', 20)
+                atr_period = parameters.get('atr_period', 10)
+                multiplier = parameters.get('multiplier', 2.0)
+
+                ema = TechnicalIndicators.calculate_ema(df, ema_period)
+                atr = TechnicalIndicators.calculate_atr(df, atr_period)
+
+                indicators['kc_middle'] = ema
+                indicators['kc_upper'] = ema + (multiplier * atr)
+                indicators['kc_lower'] = ema - (multiplier * atr)
+                indicators['kc_middle_current'] = float(ema.iloc[-1])
+                indicators['kc_upper_current'] = float(indicators['kc_upper'].iloc[-1])
+                indicators['kc_lower_current'] = float(indicators['kc_lower'].iloc[-1])
+
+            elif strategy_type.upper() == 'ICHIMOKU_CLOUD':
+                tenkan_period = parameters.get('tenkan_period', 9)
+                kijun_period = parameters.get('kijun_period', 26)
+                senkou_b_period = parameters.get('senkou_b_period', 52)
+                displacement = parameters.get('displacement', 26)
+
+                ichimoku = TechnicalIndicators.calculate_ichimoku(df, tenkan_period, kijun_period, senkou_b_period, displacement)
+
+                for key, series in ichimoku.items():
+                    indicators[key] = series
+                    indicators[f'{key}_current'] = float(series.iloc[-1]) if not pd.isna(series.iloc[-1]) else 0
+                    indicators[f'{key}_prev'] = float(series.iloc[-2]) if len(series) > 1 and not pd.isna(series.iloc[-2]) else indicators[f'{key}_current']
+
+                cloud_top = pd.concat([ichimoku['senkou_span_a'], ichimoku['senkou_span_b']], axis=1).max(axis=1)
+                cloud_bottom = pd.concat([ichimoku['senkou_span_a'], ichimoku['senkou_span_b']], axis=1).min(axis=1)
+                indicators['cloud_top'] = cloud_top
+                indicators['cloud_bottom'] = cloud_bottom
+                indicators['cloud_top_current'] = float(cloud_top.iloc[-1]) if not pd.isna(cloud_top.iloc[-1]) else 0
+                indicators['cloud_bottom_current'] = float(cloud_bottom.iloc[-1]) if not pd.isna(cloud_bottom.iloc[-1]) else 0
+
+            elif strategy_type.upper() == 'ATR_TRAILING_STOP':
+                atr_period = parameters.get('atr_period', 14)
+                atr_multiplier = parameters.get('atr_multiplier', 3.0)
+                trend_period = parameters.get('trend_period', 50)
+                use_chandelier = parameters.get('use_chandelier', True)
+
+                atr = TechnicalIndicators.calculate_atr(df, atr_period)
+                trend_ema = TechnicalIndicators.calculate_ema(df, trend_period)
+
+                if use_chandelier:
+                    highest_high = df['high'].rolling(window=atr_period).max()
+                    trailing_stop = highest_high - (atr_multiplier * atr)
+                else:
+                    trailing_stop = df['close'] - (atr_multiplier * atr)
+
+                indicators['atr'] = atr
+                indicators['trend_ema'] = trend_ema
+                indicators['trailing_stop'] = trailing_stop
+                indicators['atr_current'] = float(atr.iloc[-1])
+                indicators['trend_ema_current'] = float(trend_ema.iloc[-1])
+                indicators['trend_ema_prev'] = float(trend_ema.iloc[-2]) if len(trend_ema) > 1 else indicators['trend_ema_current']
+                indicators['trailing_stop_current'] = float(trailing_stop.iloc[-1])
+                indicators['trailing_stop_prev'] = float(trailing_stop.iloc[-2]) if len(trailing_stop) > 1 else indicators['trailing_stop_current']
+                indicators['prev_close'] = float(df['close'].iloc[-2]) if len(df) > 1 else indicators['current_price']
+
+            elif strategy_type.upper() == 'DONCHIAN_CHANNEL':
+                use_system_2 = parameters.get('use_system_2', False)
+                if use_system_2:
+                    entry_period = 55
+                    exit_period = 20
+                else:
+                    entry_period = parameters.get('entry_period', 20)
+                    exit_period = parameters.get('exit_period', 10)
+                atr_period = parameters.get('atr_period', 20)
+
+                indicators['entry_high'] = df['high'].rolling(window=entry_period).max()
+                indicators['entry_low'] = df['low'].rolling(window=entry_period).min()
+                indicators['exit_high'] = df['high'].rolling(window=exit_period).max()
+                indicators['exit_low'] = df['low'].rolling(window=exit_period).min()
+                indicators['atr'] = TechnicalIndicators.calculate_atr(df, atr_period)
+
+                indicators['entry_high_prev'] = float(indicators['entry_high'].iloc[-2]) if len(indicators['entry_high']) > 1 else float(indicators['entry_high'].iloc[-1])
+                indicators['exit_low_prev'] = float(indicators['exit_low'].iloc[-2]) if len(indicators['exit_low']) > 1 else float(indicators['exit_low'].iloc[-1])
+                indicators['atr_current'] = float(indicators['atr'].iloc[-1])
+
             # Add common indicators
             indicators['current_price'] = current_price
             indicators['volume_current'] = float(df['volume'].iloc[-1])

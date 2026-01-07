@@ -245,6 +245,10 @@ class DataFetcher:
             # Rename columns to standard format
             df.columns = ['open', 'high', 'low', 'close', 'volume', 'trade_count', 'vwap']
             
+            # Ensure timezone-aware index (Alpaca returns UTC timestamps)
+            if df.index.tz is None:
+                df.index = df.index.tz_localize('UTC')
+            
             return df[['open', 'high', 'low', 'close', 'volume']]
             
         except Exception as e:
@@ -278,6 +282,10 @@ class DataFetcher:
             
             # Rename columns to lowercase
             df.columns = [col.lower() for col in df.columns]
+            
+            # Ensure timezone-aware index (localize to UTC)
+            if df.index.tz is None:
+                df.index = df.index.tz_localize('UTC')
             
             # Return only OHLCV data
             return df[['open', 'high', 'low', 'close', 'volume']]

@@ -79,3 +79,20 @@ backend/.env.bak
 
 # Git worktrees
 .worktrees/
+
+# Database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Test results and artifacts
+test-results/
+playwright-report/
+*.webm
+
+# Runtime data files
+live_trading_status.json
+strategy_ids.json
+signal_monitor_report.json
+backtest_results*.json

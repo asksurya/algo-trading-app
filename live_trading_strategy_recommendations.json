@@ -1,0 +1,428 @@
+{
+  "AAPL": {
+    "top_strategies": [
+      {
+        "strategy_type": "ADAPTIVE_ML",
+        "return": 26.34,
+        "sharpe_ratio": 4.42,
+        "win_rate": 96.67,
+        "max_drawdown": 3.22,
+        "total_trades": 30,
+        "profit_factor": 23.0,
+        "parameters": {},
+        "score": 73.112
+      },
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 2.87,
+        "sharpe_ratio": 0.26,
+        "win_rate": 62.5,
+        "max_drawdown": 3.4,
+        "total_trades": 8,
+        "profit_factor": 2.13,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 34.241
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": -0.91,
+        "sharpe_ratio": -0.74,
+        "win_rate": 40.0,
+        "max_drawdown": 5.38,
+        "total_trades": 15,
+        "profit_factor": 0.82,
+        "parameters": {
+          "period": 20
+        },
+        "score": 22.211000000000002
+      },
+      {
+        "strategy_type": "MACD",
+        "return": -1.54,
+        "sharpe_ratio": -0.95,
+        "win_rate": 45.45,
+        "max_drawdown": 4.47,
+        "total_trades": 11,
+        "profit_factor": 0.67,
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        },
+        "score": 22.034000000000002
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 4
+  },
+  "AMD": {
+    "top_strategies": [
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 19.42,
+        "sharpe_ratio": 1.56,
+        "win_rate": 60.0,
+        "max_drawdown": 3.71,
+        "total_trades": 5,
+        "profit_factor": 6.53,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 46.444
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": 20.85,
+        "sharpe_ratio": 1.75,
+        "win_rate": 33.33,
+        "max_drawdown": 5.28,
+        "total_trades": 9,
+        "profit_factor": 5.47,
+        "parameters": {
+          "period": 20
+        },
+        "score": 42.364999999999995
+      },
+      {
+        "strategy_type": "MACD",
+        "return": 10.71,
+        "sharpe_ratio": 0.95,
+        "win_rate": 41.67,
+        "max_drawdown": 5.9,
+        "total_trades": 12,
+        "profit_factor": 2.39,
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        },
+        "score": 36.067
+      },
+      {
+        "strategy_type": "ATR_TRAILING_STOP",
+        "return": 12.04,
+        "sharpe_ratio": 0.9,
+        "win_rate": 33.33,
+        "max_drawdown": 8.5,
+        "total_trades": 6,
+        "profit_factor": 2.98,
+        "parameters": {
+          "atr_period": 14,
+          "atr_multiplier": 3.0,
+          "trend_period": 50
+        },
+        "score": 33.978
+      },
+      {
+        "strategy_type": "ADAPTIVE_ML",
+        "return": 2.98,
+        "sharpe_ratio": 0.17,
+        "win_rate": 50.0,
+        "max_drawdown": 6.04,
+        "total_trades": 8,
+        "profit_factor": 1.36,
+        "parameters": {},
+        "score": 30.705999999999996
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 5
+  },
+  "NVDA": {
+    "top_strategies": [
+      {
+        "strategy_type": "ICHIMOKU_CLOUD",
+        "return": 12.51,
+        "sharpe_ratio": 1.75,
+        "win_rate": 40.0,
+        "max_drawdown": 2.85,
+        "total_trades": 5,
+        "profit_factor": 6.21,
+        "parameters": {
+          "tenkan_period": 9,
+          "kijun_period": 26,
+          "senkou_b_period": 52,
+          "displacement": 26
+        },
+        "score": 41.68300000000001
+      },
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 8.82,
+        "sharpe_ratio": 1.11,
+        "win_rate": 60.0,
+        "max_drawdown": 3.46,
+        "total_trades": 10,
+        "profit_factor": 3.44,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 40.614000000000004
+      },
+      {
+        "strategy_type": "ADAPTIVE_ML",
+        "return": 3.46,
+        "sharpe_ratio": 0.23,
+        "win_rate": 71.43,
+        "max_drawdown": 7.15,
+        "total_trades": 7,
+        "profit_factor": 1.57,
+        "parameters": {},
+        "score": 35.274
+      },
+      {
+        "strategy_type": "ATR_TRAILING_STOP",
+        "return": 5.24,
+        "sharpe_ratio": 0.48,
+        "win_rate": 42.86,
+        "max_drawdown": 5.54,
+        "total_trades": 7,
+        "profit_factor": 1.84,
+        "parameters": {
+          "atr_period": 14,
+          "atr_multiplier": 3.0,
+          "trend_period": 50
+        },
+        "score": 31.916
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": 5.21,
+        "sharpe_ratio": 0.53,
+        "win_rate": 28.57,
+        "max_drawdown": 7.44,
+        "total_trades": 14,
+        "profit_factor": 1.61,
+        "parameters": {
+          "period": 20
+        },
+        "score": 28.969
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 6
+  },
+  "SPY": {
+    "top_strategies": [
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 2.74,
+        "sharpe_ratio": 0.43,
+        "win_rate": 57.14,
+        "max_drawdown": 1.12,
+        "total_trades": 7,
+        "profit_factor": 6.96,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 34.606
+      },
+      {
+        "strategy_type": "ADAPTIVE_ML",
+        "return": 2.67,
+        "sharpe_ratio": 0.28,
+        "win_rate": 60.0,
+        "max_drawdown": 2.88,
+        "total_trades": 5,
+        "profit_factor": 2.1,
+        "parameters": {},
+        "score": 33.905
+      },
+      {
+        "strategy_type": "DONCHIAN_CHANNEL",
+        "return": 1.24,
+        "sharpe_ratio": -0.42,
+        "win_rate": 50.0,
+        "max_drawdown": 1.3,
+        "total_trades": 6,
+        "profit_factor": 2.05,
+        "parameters": {
+          "entry_period": 20,
+          "exit_period": 10,
+          "atr_period": 20
+        },
+        "score": 27.592000000000002
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": 1.17,
+        "sharpe_ratio": -0.33,
+        "win_rate": 33.33,
+        "max_drawdown": 2.54,
+        "total_trades": 12,
+        "profit_factor": 1.38,
+        "parameters": {
+          "period": 20
+        },
+        "score": 24.529000000000003
+      },
+      {
+        "strategy_type": "MACD",
+        "return": 0.25,
+        "sharpe_ratio": -0.83,
+        "win_rate": 46.67,
+        "max_drawdown": 2.55,
+        "total_trades": 15,
+        "profit_factor": 1.08,
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        },
+        "score": 23.919000000000004
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 5
+  },
+  "TSLA": {
+    "top_strategies": [
+      {
+        "strategy_type": "ICHIMOKU_CLOUD",
+        "return": 3.62,
+        "sharpe_ratio": 0.24,
+        "win_rate": 50.0,
+        "max_drawdown": 5.54,
+        "total_trades": 6,
+        "profit_factor": 1.4,
+        "parameters": {
+          "tenkan_period": 9,
+          "kijun_period": 26,
+          "senkou_b_period": 52,
+          "displacement": 26
+        },
+        "score": 31.418
+      },
+      {
+        "strategy_type": "ATR_TRAILING_STOP",
+        "return": 5.35,
+        "sharpe_ratio": 0.4,
+        "win_rate": 40.0,
+        "max_drawdown": 7.5,
+        "total_trades": 5,
+        "profit_factor": 2.73,
+        "parameters": {
+          "atr_period": 14,
+          "atr_multiplier": 3.0,
+          "trend_period": 50
+        },
+        "score": 30.505
+      },
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 2.22,
+        "sharpe_ratio": 0.07,
+        "win_rate": 47.06,
+        "max_drawdown": 8.16,
+        "total_trades": 17,
+        "profit_factor": 1.19,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 28.866000000000003
+      },
+      {
+        "strategy_type": "MACD",
+        "return": 3.86,
+        "sharpe_ratio": 0.27,
+        "win_rate": 25.0,
+        "max_drawdown": 8.39,
+        "total_trades": 12,
+        "profit_factor": 1.39,
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        },
+        "score": 26.1
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": 2.01,
+        "sharpe_ratio": 0.05,
+        "win_rate": 26.67,
+        "max_drawdown": 6.31,
+        "total_trades": 15,
+        "profit_factor": 1.2,
+        "parameters": {
+          "period": 20
+        },
+        "score": 24.975
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 5
+  },
+  "MSFT": {
+    "top_strategies": [
+      {
+        "strategy_type": "MOMENTUM",
+        "return": 5.14,
+        "sharpe_ratio": 1.05,
+        "win_rate": 71.43,
+        "max_drawdown": 1.52,
+        "total_trades": 7,
+        "profit_factor": 7.17,
+        "parameters": {
+          "period": 20,
+          "threshold": 0.0
+        },
+        "score": 41.824
+      },
+      {
+        "strategy_type": "VWAP",
+        "return": 5.47,
+        "sharpe_ratio": 1.07,
+        "win_rate": 33.33,
+        "max_drawdown": 1.78,
+        "total_trades": 9,
+        "profit_factor": 3.32,
+        "parameters": {
+          "period": 20
+        },
+        "score": 34.371
+      },
+      {
+        "strategy_type": "ADAPTIVE_ML",
+        "return": 0.93,
+        "sharpe_ratio": -0.25,
+        "win_rate": 33.33,
+        "max_drawdown": 2.65,
+        "total_trades": 6,
+        "profit_factor": 1.22,
+        "parameters": {},
+        "score": 24.915
+      },
+      {
+        "strategy_type": "MACD",
+        "return": -0.41,
+        "sharpe_ratio": -0.7,
+        "win_rate": 18.18,
+        "max_drawdown": 3.17,
+        "total_trades": 11,
+        "profit_factor": 0.89,
+        "parameters": {
+          "fast_period": 12,
+          "slow_period": 26,
+          "signal_period": 9
+        },
+        "score": 18.679
+      }
+    ],
+    "recommended_count": 3,
+    "total_tested": 15,
+    "valid_strategies": 4
+  }
+}

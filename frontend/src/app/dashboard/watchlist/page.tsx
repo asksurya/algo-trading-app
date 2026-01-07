@@ -105,9 +105,9 @@ export default function WatchlistPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen">
+            <div className="flex items-center justify-center h-screen" data-testid="watchlist-loading-container">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" data-testid="watchlist-spinner"></div>
                     <p className="mt-4 text-gray-600">Loading watchlists...</p>
                 </div>
             </div>
@@ -115,7 +115,7 @@ export default function WatchlistPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto p-6 space-y-6" data-testid="watchlist-page">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Watchlists</h1>
                 <div className="flex gap-2">
@@ -125,8 +125,9 @@ export default function WatchlistPage() {
                         onChange={(e) => setNewWatchlistName(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && createWatchlist()}
                         className="w-64"
+                        data-testid="watchlist-create-input"
                     />
-                    <Button onClick={createWatchlist}>
+                    <Button onClick={createWatchlist} data-testid="watchlist-create-button">
                         <Plus className="h-4 w-4 mr-2" />
                         Create Watchlist
                     </Button>
@@ -134,16 +135,16 @@ export default function WatchlistPage() {
             </div>
 
             {watchlists.length === 0 ? (
-                <Card>
+                <Card data-testid="watchlist-empty-state">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <p className="text-muted-foreground mb-4">No watchlists yet</p>
                         <p className="text-sm text-muted-foreground">Create your first watchlist to track symbols</p>
                     </CardContent>
                 </Card>
             ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="watchlist-grid">
                     {watchlists.map((watchlist) => (
-                        <Card key={watchlist.id} className="hover:shadow-lg transition-shadow">
+                        <Card key={watchlist.id} className="hover:shadow-lg transition-shadow" data-testid={`watchlist-card-${watchlist.id}`}>
                             <CardHeader>
                                 <CardTitle className="flex justify-between items-center">
                                     <span>{watchlist.name}</span>
@@ -162,16 +163,17 @@ export default function WatchlistPage() {
                                         onChange={(e) => setNewSymbol(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && addSymbol(watchlist.id)}
                                         className="flex-1"
+                                        data-testid={`watchlist-add-symbol-input-${watchlist.id}`}
                                     />
-                                    <Button size="sm" onClick={() => addSymbol(watchlist.id)}>
+                                    <Button size="sm" onClick={() => addSymbol(watchlist.id)} data-testid={`watchlist-add-symbol-button-${watchlist.id}`}>
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
 
                                 {/* Watchlist Items */}
-                                <div className="space-y-2">
+                                <div className="space-y-2" data-testid={`watchlist-items-${watchlist.id}`}>
                                     {watchlist.items.length === 0 ? (
-                                        <p className="text-sm text-muted-foreground text-center py-4">
+                                        <p className="text-sm text-muted-foreground text-center py-4" data-testid={`watchlist-empty-items-${watchlist.id}`}>
                                             No symbols added yet
                                         </p>
                                     ) : (
@@ -179,10 +181,11 @@ export default function WatchlistPage() {
                                             <div
                                                 key={item.id}
                                                 className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
+                                                data-testid={`watchlist-item-row-${item.id}`}
                                             >
                                                 <div className="flex-1">
-                                                    <p className="font-semibold">{item.symbol}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="font-semibold" data-testid={`watchlist-item-symbol-${item.id}`}>{item.symbol}</p>
+                                                    <p className="text-sm text-muted-foreground" data-testid={`watchlist-item-price-${item.id}`}>
                                                         {formatPrice(item.current_price)}
                                                     </p>
                                                 </div>
@@ -190,13 +193,13 @@ export default function WatchlistPage() {
                                                     <span className={`text-sm font-medium ${item.change_percent && item.change_percent >= 0
                                                             ? 'text-green-600'
                                                             : 'text-red-600'
-                                                        }`}>
+                                                        }`} data-testid={`watchlist-item-change-${item.id}`}>
                                                         {formatPercent(item.change_percent)}
                                                     </span>
-                                                    <Button size="sm" variant="ghost">
+                                                    <Button size="sm" variant="ghost" data-testid={`watchlist-item-alert-button-${item.id}`}>
                                                         <Bell className="h-4 w-4" />
                                                     </Button>
-                                                    <Button size="sm" variant="ghost">
+                                                    <Button size="sm" variant="ghost" data-testid={`watchlist-item-delete-button-${item.id}`}>
                                                         <Trash2 className="h-4 w-4 text-red-600" />
                                                     </Button>
                                                 </div>
